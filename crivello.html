@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crivello di Eratostene</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #0c0f18;
+  --surface:   #131826;
+  --surface2:  #1a2136;
+  --border:    #252f48;
+  --text:      #dde5ff;
+  --muted:     #4a5580;
+  --prime:     #f5d76e;   /* giallo oro - numeri primi */
+  --current:   #7cebff;   /* azzurro - numero corrente */
+  --elim:      #ff6b6b;   /* rosso - eliminati */
+  --done:      #6af7a0;   /* verde - primi confermati */
+  --neutral:   #1e2840;   /* grigio scuro - non ancora visitati */
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 48px;
+  gap: 18px;
+}
+
+header { text-align: center; }
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+header p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 4px;
+  letter-spacing: 0.06em;
+}
+
+/* controls row */
+.controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 900px;
+}
+
+.ctrl-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 14px;
+}
+.ctrl-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.ctrl-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  min-width: 36px;
+}
+input[type=range] {
+  width: 110px;
+  accent-color: var(--prime);
+  cursor: pointer;
+}
+
+/* speed control */
+.speed-btns {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.speed-btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  padding: 7px 12px;
+  background: var(--surface);
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.12s, color 0.12s;
+}
+.speed-btn.active { background: var(--surface2); color: var(--text); }
+.speed-btn:hover:not(.active) { color: var(--text); }
+
+/* play/pause/reset */
+.action-btns { display: flex; gap: 8px; }
+.btn {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  padding: 8px 18px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.btn-play  { background: var(--prime); color: #1a1000; border-color: var(--prime); font-weight: 600; }
+.btn-play:hover { filter: brightness(1.1); }
+.btn-step  { background: var(--surface); color: var(--current); border-color: var(--current); }
+.btn-step:hover { background: var(--surface2); }
+.btn-reset { background: var(--surface); color: var(--muted); border-color: var(--border); }
+.btn-reset:hover { color: var(--text); border-color: var(--muted); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* main layout */
+.main {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* grid */
+.grid-wrap {
+  flex: 1;
+  min-width: 300px;
+}
+
+#grid {
+  display: grid;
+  gap: 3px;
+  width: 100%;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  border-radius: 3px;
+  background: var(--neutral);
+  color: var(--muted);
+  transition: background 0.2s, color 0.2s, transform 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.cell.prime    { background: var(--done);    color: #003a1a; font-weight: 700; }
+.cell.current  { background: var(--current); color: #001a22; font-weight: 700;
+                 box-shadow: 0 0 12px var(--current); transform: scale(1.08); z-index: 2; }
+.cell.elim     { background: rgba(255,107,107,0.18); color: rgba(255,107,107,0.5);
+                 text-decoration: line-through; }
+.cell.elim-flash { background: rgba(255,107,107,0.6) !important; transition: background 0.05s; }
+.cell.one      { background: var(--surface2); color: var(--muted); opacity: 0.5; }
+
+/* right panel */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 210px;
+  max-width: 240px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 14px;
+}
+.card-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* status message */
+.status-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.7;
+  color: var(--text);
+  min-height: 60px;
+}
+.status-msg .hl-current { color: var(--current); font-weight: 500; }
+.status-msg .hl-prime   { color: var(--prime);   font-weight: 500; }
+.status-msg .hl-elim    { color: var(--elim);    font-weight: 500; }
+.status-msg .hl-done    { color: var(--done);    font-weight: 500; }
+
+/* stats */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.stat-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.sv-prime { color: var(--done); }
+.sv-elim  { color: var(--elim); }
+.sv-pct   { color: var(--prime); }
+
+/* progress bar */
+.prog-wrap {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.prog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--current), var(--prime));
+  border-radius: 2px;
+  transition: width 0.3s;
+}
+
+/* prime list */
+.prime-list {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--done);
+  line-height: 1.8;
+  max-height: 120px;
+  overflow-y: auto;
+  word-break: break-all;
+}
+
+/* legend */
+.legend { display: flex; flex-direction: column; gap: 6px; }
+.leg-row { display: flex; align-items: center; gap: 8px; }
+.leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.leg-label { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+
+/* mobile */
+@media (max-width: 620px) {
+  .panel { max-width: 100%; min-width: 0; width: 100%; }
+  .main { flex-direction: column; }
+  .cell { font-size: 0.6rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Crivello di Eratostene</h1>
+  <p>per ogni primo p, elimina tutti i suoi multipli</p>
+</header>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">N fino a</span>
+    <input type="range" id="nSlider" min="20" max="500" value="100" step="10">
+    <span class="ctrl-val" id="nVal">100</span>
+  </div>
+
+  <div class="ctrl-group">
+    <span class="ctrl-label">Velocità</span>
+    <div class="speed-btns">
+      <button class="speed-btn" data-ms="600">lenta</button>
+      <button class="speed-btn active" data-ms="180">normale</button>
+      <button class="speed-btn" data-ms="40">veloce</button>
+      <button class="speed-btn" data-ms="5">max</button>
+    </div>
+  </div>
+
+  <div class="action-btns">
+    <button class="btn btn-play" id="btnPlay">▶ avvia</button>
+    <button class="btn btn-step" id="btnStep">passo</button>
+    <button class="btn btn-reset" id="btnReset">reset</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="grid-wrap">
+    <div id="grid"></div>
+  </div>
+
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">Stato</div>
+      <div class="status-msg" id="statusMsg">Premi ▶ per iniziare.</div>
+      <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Statistiche</div>
+      <div class="stat-row">
+        <span class="stat-label">Primi trovati</span>
+        <span class="stat-val sv-prime" id="statPrime">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Eliminati</span>
+        <span class="stat-val sv-elim" id="statElim">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Densità π(N)/N</span>
+        <span class="stat-val sv-pct" id="statPct">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Prossimo da esaminare</span>
+        <span class="stat-val" style="color:var(--current)" id="statNext">—</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Primi trovati</div>
+      <div class="prime-list" id="primeList">—</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Legenda</div>
+      <div class="legend">
+        <div class="leg-row"><div class="leg-dot" style="background:var(--neutral)"></div><span class="leg-label">non ancora esaminato</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--current)"></div><span class="leg-label">numero corrente</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:var(--done)"></div><span class="leg-label">primo confermato</span></div>
+        <div class="leg-row"><div class="leg-dot" style="background:rgba(255,107,107,0.3);border:1px solid var(--elim)"></div><span class="leg-label">multiplo eliminato</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let N = 100;
+let stepMs = 180;
+let sieve = [];       // true = ancora candidato
+let primes = [];
+let currentP = 2;
+let multiples = [];   // multipli da eliminare per currentP
+let multIdx = 0;
+let phase = 'idle';   // idle | scanning | eliminating | done
+let timer = null;
+
+// ---- build grid ----
+function buildGrid() {
+  const grid = document.getElementById('grid');
+  const cols = N <= 50 ? 10 : N <= 100 ? 10 : N <= 200 ? 20 : 25;
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.innerHTML = '';
+  for (let i = 1; i <= N; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (i === 1 ? ' one' : '');
+    cell.id = `c${i}`;
+    cell.textContent = i;
+    grid.appendChild(cell);
+  }
+}
+
+function resetState() {
+  sieve = new Array(N + 1).fill(true);
+  sieve[0] = sieve[1] = false;
+  primes = [];
+  currentP = 2;
+  multiples = [];
+  multIdx = 0;
+  phase = 'idle';
+  clearInterval(timer); timer = null;
+  buildGrid();
+  updatePanel();
+  document.getElementById('progBar').style.width = '0%';
+  document.getElementById('statusMsg').innerHTML = 'Premi ▶ per iniziare.';
+  document.getElementById('btnPlay').textContent = '▶ avvia';
+  document.getElementById('btnPlay').disabled = false;
+  document.getElementById('btnStep').disabled = false;
+}
+
+// ---- one logical step ----
+function step() {
+  if (phase === 'idle') {
+    phase = 'scanning';
+  }
+
+  if (phase === 'done') return;
+
+  if (phase === 'scanning') {
+    // find next prime
+    while (currentP <= N && !sieve[currentP]) currentP++;
+    if (currentP > Math.sqrt(N)) {
+      // all done - mark remaining sieve[i]=true as primes
+      finalize();
+      return;
+    }
+    // mark currentP as prime
+    primes.push(currentP);
+    cell(currentP).className = 'cell current';
+    setStatus(`<span class="hl-current">${currentP}</span> è primo — elimino i suoi multipli`);
+    // prepare elimination list
+    multiples = [];
+    for (let m = currentP * currentP; m <= N; m += currentP) {
+      if (sieve[m]) multiples.push(m);
+    }
+    multIdx = 0;
+    phase = 'eliminating';
+    return;
+  }
+
+  if (phase === 'eliminating') {
+    if (multIdx < multiples.length) {
+      const m = multiples[multIdx];
+      sieve[m] = false;
+      const c = cell(m);
+      c.classList.add('elim-flash');
+      setTimeout(() => { c.className = 'cell elim'; }, 80);
+      setStatus(`<span class="hl-current">${currentP}</span> è primo — elimino <span class="hl-elim">${m}</span> = ${currentP} × ${m/currentP}`);
+      multIdx++;
+    } else {
+      // done with this prime
+      cell(currentP).className = 'cell prime';
+      setStatus(`<span class="hl-done">${currentP}</span> confermato primo. Cerco il prossimo...`);
+      currentP++;
+      phase = 'scanning';
+    }
+    updateStats();
+    return;
+  }
+}
+
+function finalize() {
+  phase = 'done';
+  clearInterval(timer); timer = null;
+  for (let i = 2; i <= N; i++) {
+    if (sieve[i]) {
+      primes.push(i);
+      cell(i).className = 'cell prime';
+    }
+  }
+  document.getElementById('progBar').style.width = '100%';
+  setStatus(`<span class="hl-done">Completato!</span> Trovati ${primes.length} primi fino a ${N}.`);
+  updateStats();
+  document.getElementById('btnPlay').textContent = '▶ avvia';
+  document.getElementById('btnPlay').disabled = true;
+  document.getElementById('btnStep').disabled = true;
+}
+
+function cell(n) { return document.getElementById(`c${n}`); }
+
+function setStatus(html) {
+  document.getElementById('statusMsg').innerHTML = html;
+}
+
+function updateStats() {
+  const elimCount = sieve.filter((v,i) => i >= 2 && !v).length;
+  document.getElementById('statPrime').textContent = primes.length;
+  document.getElementById('statElim').textContent = elimCount;
+  const pct = primes.length > 0 ? ((primes.length / N) * 100).toFixed(1) + '%' : '—';
+  document.getElementById('statPct').textContent = pct;
+  const next = currentP <= N ? currentP : '—';
+  document.getElementById('statNext').textContent = next;
+  document.getElementById('primeList').textContent = primes.join('  ') || '—';
+  const prog = Math.min(100, (currentP / Math.sqrt(N)) * 100);
+  if (phase !== 'done') document.getElementById('progBar').style.width = prog + '%';
+}
+
+function updatePanel() {
+  document.getElementById('statPrime').textContent = '—';
+  document.getElementById('statElim').textContent = '—';
+  document.getElementById('statPct').textContent = '—';
+  document.getElementById('statNext').textContent = '—';
+  document.getElementById('primeList').textContent = '—';
+}
+
+// ---- controls ----
+document.getElementById('btnPlay').addEventListener('click', () => {
+  if (phase === 'done') return;
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+    document.getElementById('btnPlay').textContent = '▶ riprendi';
+  } else {
+    document.getElementById('btnPlay').textContent = '⏸ pausa';
+    timer = setInterval(step, stepMs);
+  }
+});
+
+document.getElementById('btnStep').addEventListener('click', () => {
+  if (phase === 'done') return;
+  if (timer) { clearInterval(timer); timer = null; document.getElementById('btnPlay').textContent = '▶ riprendi'; }
+  step();
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  clearInterval(timer); timer = null;
+  resetState();
+});
+
+document.getElementById('nSlider').addEventListener('input', e => {
+  N = parseInt(e.target.value);
+  document.getElementById('nVal').textContent = N;
+  clearInterval(timer); timer = null;
+  resetState();
+});
+
+document.querySelectorAll('.speed-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    stepMs = parseInt(btn.dataset.ms);
+    if (timer) {
+      clearInterval(timer);
+      timer = setInterval(step, stepMs);
+    }
+  });
+});
+
+resetState();
+</script>
+</body>
+</html>

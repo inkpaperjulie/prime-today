@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prime Today</title>
+  <meta name="description" content="Is today a prime number? Daily facts, formulas, tools and notes on prime numbers." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06060a;
+      --surface: rgba(255,255,255,0.03);
+      --surface2: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #e8e3d5;
+      --muted: rgba(232,227,213,0.38);
+      --accent: #b8a9e8;
+      --accent2: #7ec8a4;
+      --serif: 'DM Serif Display', Georgia, serif;
+      --mono: 'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); overflow-x: hidden; min-height: 100vh; }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4; pointer-events: none; z-index: 0;
+    }
+    .site { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 28px; }
+
+    /* NAV */
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; border-bottom: 0.5px solid var(--border); }
+    .nav-logo { font-family: var(--serif); font-size: 18px; color: var(--text); text-decoration: none; }
+    .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .nav-links a { font-size: 11px; color: var(--muted); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--text); }
+
+    /* HERO */
+    .hero { padding: 72px 0 56px; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; animation: fadeUp 0.6s ease both; }
+    .hero-eyebrow { font-size: 10px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-bottom: 20px; }
+    .hero-answer { font-family: var(--serif); font-size: 72px; line-height: 1; margin-bottom: 16px; }
+    .hero-answer.prime { color: #e8e3d5; }
+    .hero-answer.not-prime { color: rgba(232,227,213,0.4); }
+    .hero-date { font-size: 13px; color: var(--muted); }
+    .hero-right { display: flex; flex-direction: column; gap: 12px; }
+    .hero-fact { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+    .fact-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .fact-val { font-size: 15px; color: var(--text); }
+    .fact-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .prime-badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 11px; letter-spacing: 0.06em; }
+    .prime-badge.yes { background: rgba(126,200,164,0.12); color: var(--accent2); border: 0.5px solid rgba(126,200,164,0.25); }
+    .prime-badge.no { background: rgba(255,255,255,0.05); color: var(--muted); border: 0.5px solid var(--border); }
+
+    .divider { height: 0.5px; background: var(--border); margin: 8px 0; }
+
+    /* SECTIONS */
+    .section { padding: 52px 0; animation: fadeUp 0.6s ease both; animation-delay: 0.1s; }
+    .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 32px; }
+    .section-num { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+    .section-title { font-family: var(--serif); font-size: 28px; font-style: italic; }
+
+    /* ORACLE */
+    .oracle-input-wrap { display: flex; margin-bottom: 32px; }
+    .oracle-input {
+      background: transparent; border: 0.5px solid var(--border); border-right: none;
+      border-radius: 8px 0 0 8px; padding: 12px 18px; font-family: var(--mono);
+      font-size: 18px; color: var(--text); width: 220px; outline: none; transition: border-color 0.2s;
+    }
+    .oracle-input:focus { border-color: rgba(255,255,255,0.25); }
+    .oracle-input::placeholder { color: var(--muted); }
+    .oracle-btn {
+      background: rgba(255,255,255,0.06); border: 0.5px solid var(--border);
+      border-radius: 0 8px 8px 0; padding: 12px 20px; font-family: var(--mono);
+      font-size: 12px; color: var(--text); cursor: pointer; letter-spacing: 0.08em; transition: background 0.2s;
+    }
+    .oracle-btn:hover { background: rgba(255,255,255,0.1); }
+    .oracle-result { display: none; }
+    .oracle-result.show { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .ocard { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+    .ocard-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .ocard-val { font-size: 20px; color: var(--text); line-height: 1.3; }
+    .ocard-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .ocard.wide { grid-column: 1 / 4; }
+    .factors-wrap { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .factor { background: rgba(184,169,232,0.1); border: 0.5px solid rgba(184,169,232,0.2); border-radius: 4px; padding: 3px 10px; font-size: 13px; color: var(--accent); }
+
+    /* FORMULA */
+    .formula-box { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 32px 36px; }
+    .formula-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+    .formula-counter { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; }
+    .formula-btns { display: flex; gap: 8px; }
+    .fbtn { background: transparent; border: 0.5px solid var(--border); border-radius: 6px; padding: 5px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted); cursor: pointer; letter-spacing: 0.08em; transition: all 0.2s; }
+    .fbtn:hover { border-color: rgba(255,255,255,0.2); color: var(--text); }
+    .formula-main { font-family: var(--serif); font-size: 32px; font-style: italic; color: var(--text); line-height: 1.3; margin-bottom: 24px; padding-bottom: 24px; border-bottom: 0.5px solid var(--border); }
+    .formula-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+    .finfo-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .finfo-val { font-size: 13px; color: var(--text); line-height: 1.6; }
+    .finfo-val.accent { color: var(--accent); }
+    .finfo-val.muted { font-size: 12px; color: var(--muted); }
+
+    /* ULAM */
+    .ulam-wrap { display: grid; grid-template-columns: auto 1fr; gap: 36px; align-items: start; }
+    .ulam-controls { display: flex; flex-direction: column; gap: 10px; }
+    .ulam-canvas-wrap { position: relative; }
+    #ulam-canvas { display: block; cursor: crosshair; border-radius: 4px; }
+    .ulam-tooltip {
+      position: absolute; background: rgba(6,6,10,0.95); border: 0.5px solid var(--border2);
+      border-radius: 6px; padding: 8px 12px; font-size: 11px; pointer-events: none;
+      display: none; white-space: nowrap; z-index: 10;
+    }
+    .ulam-tooltip .tt-num { font-size: 15px; color: var(--text); margin-bottom: 2px; }
+    .ulam-tooltip .tt-sub { color: var(--muted); }
+    .ulam-tooltip .tt-prime { color: var(--accent2); }
+    .ulam-sidebar { display: flex; flex-direction: column; gap: 14px; }
+    .ulam-stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+    .ulam-stat-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .ulam-stat-val { font-size: 18px; color: var(--text); }
+    .ulam-stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .ulam-note { font-size: 12px; color: var(--muted); line-height: 1.7; padding: 14px 16px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; }
+    .ctrl-row { display: flex; align-items: center; gap: 10px; }
+    .ctrl-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; }
+    input[type=range] { accent-color: var(--accent); cursor: pointer; width: 120px; }
+    .ctrl-val { font-size: 12px; color: var(--text); min-width: 28px; }
+
+    /* DISCOVERIES */
+    .discoveries-grid { display: flex; flex-direction: column; gap: 1px; }
+    .discovery-item {
+      display: grid; grid-template-columns: 80px 1fr auto;
+      gap: 20px; align-items: center; padding: 18px 0;
+      border-bottom: 0.5px solid var(--border); text-decoration: none; color: inherit;
+      transition: background 0.15s; cursor: pointer;
+    }
+    .discovery-item:hover { background: var(--surface); margin: 0 -18px; padding: 18px; border-radius: 8px; border-bottom-color: transparent; }
+    .disc-date { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; line-height: 1.5; }
+    .disc-content {}
+    .disc-title { font-size: 14px; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+    .disc-excerpt { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .disc-tag { font-size: 10px; color: var(--accent); letter-spacing: 0.08em; white-space: nowrap; }
+    .disc-loading { font-size: 12px; color: var(--muted); padding: 20px 0; }
+    .disc-error { font-size: 12px; color: rgba(232,100,100,0.6); padding: 20px 0; }
+
+    /* TOOLS */
+    .tools-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .tool-card {
+      background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px;
+      padding: 22px 24px; text-decoration: none; color: inherit;
+      transition: border-color 0.2s, background 0.2s; display: block;
+    }
+    .tool-card:hover { border-color: var(--border2); background: var(--surface2); }
+    .tool-card.placeholder { border-style: dashed; cursor: default; }
+    .tool-tag { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+    .tool-title { font-family: var(--serif); font-size: 20px; font-style: italic; margin-bottom: 8px; line-height: 1.3; }
+    .tool-desc { font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .tool-arrow { display: inline-block; margin-top: 12px; font-size: 10px; color: var(--accent); letter-spacing: 0.08em; }
+
+    /* FOOTER */
+    footer { border-top: 0.5px solid var(--border); padding: 28px 0; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+    .footer-text { font-size: 11px; color: var(--muted); }
+    .footer-link { font-size: 11px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-link:hover { color: var(--text); }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      .hero { grid-template-columns: 1fr; gap: 32px; padding: 48px 0 40px; }
+      .hero-answer { font-size: 52px; }
+      .oracle-result.show { grid-template-columns: 1fr; }
+      .ocard.wide { grid-column: 1; }
+      .formula-info { grid-template-columns: 1fr; }
+      .formula-main { font-size: 22px; }
+      .tools-grid { grid-template-columns: 1fr; }
+      .ulam-wrap { grid-template-columns: 1fr; }
+      .discovery-item { grid-template-columns: 1fr; gap: 6px; }
+      .disc-date { display: none; }
+    }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+<div class="site">
+
+  <nav>
+    <a class="nav-logo" href="#top">Prime Today</a>
+    <div class="nav-links">
+      <a href="#top">today</a>
+      <a href="#oracle">oracle</a>
+      <a href="#formula">formulas</a>
+      <a href="#ulam">ulam spiral</a>
+      <a href="#discoveries">discoveries</a>
+      <a href="#tools">tools</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero" id="top">
+    <div class="hero-left">
+      <div class="hero-eyebrow">today in primes</div>
+      <div class="hero-answer" id="hero-answer">—</div>
+      <div class="hero-date" id="hero-date"></div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-fact">
+        <div class="fact-label">day of the year</div>
+        <div class="fact-val" id="doy-val">—</div>
+        <div class="fact-sub" id="doy-sub"></div>
+      </div>
+      <div class="hero-fact">
+        <div class="fact-label">nearest prime</div>
+        <div class="fact-val" id="near-prime">—</div>
+        <div class="fact-sub" id="near-sub"></div>
+      </div>
+      <div class="hero-fact">
+        <div class="fact-label">prime gap today</div>
+        <div class="fact-val" id="prime-gap">—</div>
+        <div class="fact-sub" id="gap-sub"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ORACLE -->
+  <div class="section" id="oracle">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">The Oracle</span>
+    </div>
+    <div class="oracle-input-wrap">
+      <input class="oracle-input" type="number" id="oracle-input" placeholder="enter a number" min="1" />
+      <button class="oracle-btn" onclick="runOracle()">analyse →</button>
+    </div>
+    <div class="oracle-result" id="oracle-result">
+      <div class="ocard wide">
+        <div class="ocard-label">verdict</div>
+        <div class="ocard-val" id="or-verdict"></div>
+      </div>
+      <div class="ocard">
+        <div class="ocard-label">factorization</div>
+        <div class="factors-wrap" id="or-factors"></div>
+      </div>
+      <div class="ocard">
+        <div class="ocard-label">digit sum</div>
+        <div class="ocard-val" id="or-digitsum"></div>
+        <div class="ocard-sub" id="or-digitsum-sub"></div>
+      </div>
+      <div class="ocard">
+        <div class="ocard-label">properties</div>
+        <div class="ocard-val" id="or-props" style="font-size:13px;line-height:1.8;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FORMULA -->
+  <div class="section" id="formula">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">Formula of the day</span>
+    </div>
+    <div class="formula-box">
+      <div class="formula-top">
+        <div class="formula-counter" id="f-counter">1 / 5</div>
+        <div class="formula-btns">
+          <button class="fbtn" onclick="prevF()">← prev</button>
+          <button class="fbtn" onclick="nextF()">next →</button>
+        </div>
+      </div>
+      <div class="formula-main" id="f-body"></div>
+      <div class="formula-info">
+        <div>
+          <div class="finfo-label">name</div>
+          <div class="finfo-val" id="f-name"></div>
+        </div>
+        <div>
+          <div class="finfo-label">mathematician</div>
+          <div class="finfo-val accent" id="f-author"></div>
+        </div>
+        <div>
+          <div class="finfo-label">historical context</div>
+          <div class="finfo-val muted" id="f-context"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ULAM SPIRAL -->
+  <div class="section" id="ulam">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title">Ulam Spiral</span>
+    </div>
+    <div class="ulam-wrap">
+      <div>
+        <div class="ulam-canvas-wrap">
+          <canvas id="ulam-canvas" width="420" height="420"></canvas>
+          <div class="ulam-tooltip" id="ulam-tooltip">
+            <div class="tt-num" id="tt-num"></div>
+            <div class="tt-sub" id="tt-sub"></div>
+          </div>
+        </div>
+        <div class="ulam-controls" style="margin-top:14px;">
+          <div class="ctrl-row">
+            <span class="ctrl-label">size</span>
+            <input type="range" id="ulam-size" min="11" max="71" step="2" value="41" />
+            <span class="ctrl-val" id="ulam-size-val">41×41</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label">highlight diagonals</span>
+            <input type="checkbox" id="ulam-diag" style="accent-color:var(--accent);width:auto;" />
+          </div>
+        </div>
+      </div>
+      <div class="ulam-sidebar">
+        <div class="ulam-stat">
+          <div class="ulam-stat-label">total numbers</div>
+          <div class="ulam-stat-val" id="u-total">—</div>
+        </div>
+        <div class="ulam-stat">
+          <div class="ulam-stat-label">primes found</div>
+          <div class="ulam-stat-val" id="u-primes">—</div>
+          <div class="ulam-stat-sub" id="u-density">—</div>
+        </div>
+        <div class="ulam-stat">
+          <div class="ulam-stat-label">largest prime</div>
+          <div class="ulam-stat-val" id="u-largest">—</div>
+        </div>
+        <div class="ulam-note">
+          In 1963, Stanislaw Ulam doodled a number spiral during a boring meeting. Arranging integers in a spiral and marking primes reveals unexpected diagonal patterns - a mystery still not fully explained.
+          <br><br>Hover over any cell to inspect the number.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- DISCOVERIES -->
+  <div class="section" id="discoveries">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title">Recent discoveries</span>
+    </div>
+    <div class="discoveries-grid" id="discoveries-grid">
+      <div class="disc-loading">Loading latest research from Wikipedia...</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- TOOLS -->
+  <div class="section" id="tools">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Tools & simulations</span>
+    </div>
+    <div class="tools-grid">
+
+      <a class="tool-card" href="crivello.html">
+        <div class="tool-tag">mathematics · animation</div>
+        <div class="tool-title">Sieve of Eratosthenes</div>
+        <div class="tool-desc">Watch the oldest prime-finding algorithm work step by step. For every prime p, eliminate all its multiples. Adjust speed and grid size.</div>
+        <div class="tool-arrow">open tool →</div>
+      </a>
+
+      <!-- 
+        Add your other tools below following the same pattern.
+        Replace href with the filename of your HTML tool.
+        Example:
+      -->
+
+      <a class="tool-card" href="condensatore.html">
+        <div class="tool-tag">electronics · simulation</div>
+        <div class="tool-title">Capacitor charge</div>
+        <div class="tool-desc">Interactive simulation of RC circuit charging and discharging. Visualize the exponential curve and explore how R and C affect the time constant τ.</div>
+        <div class="tool-arrow">open tool →</div>
+      </a>
+
+      <!-- PLACEHOLDER - remove or replace when you add more tools -->
+      <div class="tool-card placeholder">
+        <div class="tool-tag">coming soon</div>
+        <div class="tool-title" style="color:var(--muted);font-size:16px;">more tools</div>
+        <div class="tool-desc">New simulations and interactive tools added as they're built.</div>
+      </div>
+
+      <div class="tool-card placeholder">
+        <div class="tool-tag">coming soon</div>
+        <div class="tool-title" style="color:var(--muted);font-size:16px;"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">Prime Today · built with curiosity</div>
+    <!-- replace with your actual Substack URL -->
+    <a class="footer-link" href="https://substack.com/@narrativaa33giri" target="_blank" rel="noopener">Narrativa a 33 Giri →</a>
+  </footer>
+
+</div><!-- /site -->
+
+<script>
+/* ================================================================
+   MATH UTILS
+================================================================ */
+function isPrime(n) {
+  if (n < 2) return false;
+  if (n === 2) return true;
+  if (n % 2 === 0) return false;
+  for (let i = 3; i * i <= n; i += 2) if (n % i === 0) return false;
+  return true;
+}
+function prevPrime(n) { let x = n - 1; while (x > 1 && !isPrime(x)) x--; return x; }
+function nextPrime(n) { let x = n + 1; while (!isPrime(x)) x++; return x; }
+function factorize(n) {
+  const f = {}; let x = n;
+  for (let i = 2; i * i <= x; i++) { while (x % i === 0) { f[i] = (f[i] || 0) + 1; x = Math.floor(x / i); } }
+  if (x > 1) f[x] = (f[x] || 0) + 1;
+  return f;
+}
+function digitSum(n) { return String(n).split('').reduce((a, c) => a + parseInt(c), 0); }
+
+/* ================================================================
+   HERO
+================================================================ */
+function initHero() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const start = new Date(now.getFullYear(), 0, 0);
+  const doy = Math.floor((now - start) / 86400000);
+  const prime = isPrime(doy);
+
+  document.getElementById('hero-answer').textContent = prime ? 'Yes.' : 'Not today.';
+  document.getElementById('hero-answer').className = 'hero-answer ' + (prime ? 'prime' : 'not-prime');
+  document.getElementById('hero-date').textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ' ' + now.getFullYear();
+
+  document.getElementById('doy-val').textContent = doy;
+  document.getElementById('doy-sub').innerHTML = 'day ' + doy + ' of ' + now.getFullYear() + ' &nbsp;·&nbsp; <span class="prime-badge ' + (prime ? 'yes' : 'no') + '">' + (prime ? 'prime' : 'composite') + '</span>';
+
+  const pp = prevPrime(doy), np = nextPrime(doy);
+  const closer = Math.abs(doy - pp) <= Math.abs(np - doy) ? pp : np;
+  document.getElementById('near-prime').textContent = closer;
+  document.getElementById('near-sub').textContent = (closer < doy ? '← ' : '→ ') + Math.abs(doy - closer) + ' away';
+
+  document.getElementById('prime-gap').textContent = np - pp;
+  document.getElementById('gap-sub').textContent = 'between ' + pp + ' and ' + np;
+}
+initHero();
+
+/* ================================================================
+   ORACLE
+================================================================ */
+function runOracle() {
+  const n = parseInt(document.getElementById('oracle-input').value);
+  if (!n || n < 1) return;
+  document.getElementById('oracle-result').className = 'oracle-result show';
+
+  const prime = isPrime(n);
+  document.getElementById('or-verdict').innerHTML = n + ' is <span style="color:' + (prime ? 'var(--accent2)' : 'var(--muted)') + ';">' + (prime ? 'prime - it cannot be broken down further' : 'composite - it has non-trivial factors') + '</span>';
+
+  const fw = document.getElementById('or-factors');
+  fw.innerHTML = '';
+  if (prime) {
+    fw.innerHTML = '<span class="factor">' + n + '</span>';
+  } else {
+    Object.entries(factorize(n)).forEach(([p, e]) => {
+      const el = document.createElement('span');
+      el.className = 'factor';
+      el.textContent = e > 1 ? p + ' (×' + e + ')' : p;
+      fw.appendChild(el);
+    });
+  }
+
+  const ds = digitSum(n);
+  document.getElementById('or-digitsum').textContent = ds;
+  document.getElementById('or-digitsum-sub').textContent = isPrime(ds) ? 'digit sum is also prime' : 'digit sum is composite';
+
+  const props = [];
+  props.push(n % 2 === 0 ? 'even' : 'odd');
+  if (n % 3 === 0) props.push('divisible by 3');
+  if (String(n) === String(n).split('').reverse().join('')) props.push('palindrome');
+  const sq = Math.round(Math.sqrt(n));
+  if (sq * sq === n) props.push('perfect square (' + sq + '²)');
+  if (prime && isPrime(n + 2)) props.push('twin prime with ' + (n + 2));
+  if (prime && n > 2 && isPrime(n - 2)) props.push('twin prime with ' + (n - 2));
+  const logVal = Math.log2(n + 1), rounded = Math.round(logVal);
+  if (Math.abs(logVal - rounded) < 0.0001 && isPrime(rounded)) props.push('Mersenne number (2^' + rounded + ' - 1)');
+  document.getElementById('or-props').innerHTML = props.map(p => '· ' + p).join('<br>');
+}
+document.getElementById('oracle-input').addEventListener('keydown', e => { if (e.key === 'Enter') runOracle(); });
+
+/* ================================================================
+   FORMULAS
+================================================================ */
+const formule = [
+  { t: 'ζ(s) = Σ 1/nˢ = Π (1 − p⁻ˢ)⁻¹', n: 'Riemann Zeta Function', a: 'Bernhard Riemann · 1859', c: 'Introduced in a single 8-page paper that reshaped number theory. The unsolved Riemann Hypothesis - that all non-trivial zeros lie on Re(s) = ½ - remains one of the Millennium Prize Problems.' },
+  { t: 'eⁱᵖ + 1 = 0', n: "Euler's Identity", a: 'Leonhard Euler · ~1748', c: 'Connects five fundamental constants: e, i, π, 1 and 0. Euler never wrote it in this exact compact form. Consistently voted the most beautiful equation in mathematics.' },
+  { t: 'Mₚ = 2ᵖ − 1, p prime', n: 'Mersenne Primes', a: 'Marin Mersenne · 1644', c: 'Mersenne listed primes of this form in 1644, with some errors. Today GIMPS uses distributed computing to search for new ones. The largest known prime has over 41 million digits.' },
+  { t: 'pₙ ~ n · ln(n)', n: 'Prime Number Theorem', a: 'Hadamard & de la Vallée Poussin · 1896', c: 'Independently proved in 1896, though conjectured by Gauss at age 15 from prime tables. Around N, roughly 1 in ln(N) numbers is prime.' },
+  { t: '∫₋∞^∞ e⁻ˣ² dx = √π', n: 'Gaussian Integral', a: 'Carl Friedrich Gauss · early 1800s', c: 'π appears here with no circle in sight. The result underlies probability theory and quantum mechanics. The trick: square the integral and switch to polar coordinates.' },
+];
+let fi = 0;
+function showF() {
+  const f = formule[fi];
+  document.getElementById('f-body').textContent = f.t;
+  document.getElementById('f-name').textContent = f.n;
+  document.getElementById('f-author').textContent = f.a;
+  document.getElementById('f-context').textContent = f.c;
+  document.getElementById('f-counter').textContent = (fi + 1) + ' / ' + formule.length;
+}
+function nextF() { fi = (fi + 1) % formule.length; showF(); }
+function prevF() { fi = (fi - 1 + formule.length) % formule.length; showF(); }
+showF();
+
+/* ================================================================
+   ULAM SPIRAL
+================================================================ */
+function drawUlam() {
+  const canvas = document.getElementById('ulam-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = parseInt(document.getElementById('ulam-size').value);
+  const showDiag = document.getElementById('ulam-diag').checked;
+  const total = size * size;
+  const cell = Math.floor(420 / size);
+  const canvasSize = cell * size;
+  canvas.width = canvasSize;
+  canvas.height = canvasSize;
+
+  // build spiral map: position -> number
+  const grid = new Array(size).fill(null).map(() => new Array(size).fill(0));
+  let x = Math.floor(size / 2), y = Math.floor(size / 2);
+  let dx = 0, dy = -1, steps = 1, sc = 0, turns = 0, n = 1;
+  for (let k = 0; k < total; k++) {
+    if (x >= 0 && x < size && y >= 0 && y < size) grid[y][x] = n;
+    n++; x += dx; y += dy; sc++;
+    if (sc === steps) { sc = 0; turns++; [dx, dy] = [-dy, dx]; if (turns % 2 === 0) steps++; }
+  }
+
+  // draw
+  ctx.clearRect(0, 0, canvasSize, canvasSize);
+  let primeCount = 0, largestPrime = 0;
+
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const num = grid[row][col];
+      const prime = isPrime(num);
+      if (prime) { primeCount++; if (num > largestPrime) largestPrime = num; }
+
+      if (prime) {
+        // diagonal highlighting: check if on a diagonal pattern
+        const diagScore = showDiag ? ((row + col) % 2 === 0 ? 0.9 : 0.65) : 0.7;
+        ctx.fillStyle = `rgba(184,169,232,${diagScore})`;
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+      }
+      ctx.fillRect(col * cell, row * cell, cell - 1, cell - 1);
+    }
+  }
+
+  document.getElementById('u-total').textContent = total.toLocaleString();
+  document.getElementById('u-primes').textContent = primeCount.toLocaleString();
+  document.getElementById('u-density').textContent = ((primeCount / total) * 100).toFixed(1) + '% of numbers are prime';
+  document.getElementById('u-largest').textContent = largestPrime.toLocaleString();
+  document.getElementById('ulam-size-val').textContent = size + '×' + size;
+
+  // store grid for hover
+  canvas._grid = grid;
+  canvas._cell = cell;
+  canvas._size = size;
+}
+
+// hover
+document.getElementById('ulam-canvas').addEventListener('mousemove', function(e) {
+  if (!this._grid) return;
+  const rect = this.getBoundingClientRect();
+  const col = Math.floor((e.clientX - rect.left) / this._cell);
+  const row = Math.floor((e.clientY - rect.top) / this._cell);
+  if (col < 0 || col >= this._size || row < 0 || row >= this._size) return;
+  const num = this._grid[row][col];
+  const tt = document.getElementById('ulam-tooltip');
+  document.getElementById('tt-num').textContent = num;
+  document.getElementById('tt-num').style.color = isPrime(num) ? 'var(--accent2)' : 'var(--text)';
+  document.getElementById('tt-sub').textContent = isPrime(num) ? 'prime' : 'composite';
+  document.getElementById('tt-sub').className = isPrime(num) ? 'tt-sub tt-prime' : 'tt-sub';
+  tt.style.display = 'block';
+  let tx = e.clientX - rect.left + 12, ty = e.clientY - rect.top + 12;
+  if (tx + 100 > this.width) tx = e.clientX - rect.left - 100;
+  tt.style.left = tx + 'px';
+  tt.style.top = ty + 'px';
+});
+document.getElementById('ulam-canvas').addEventListener('mouseleave', function() {
+  document.getElementById('ulam-tooltip').style.display = 'none';
+});
+document.getElementById('ulam-size').addEventListener('input', drawUlam);
+document.getElementById('ulam-diag').addEventListener('change', drawUlam);
+drawUlam();
+
+/* ================================================================
+   DISCOVERIES - Wikipedia API (prime numbers recent events)
+================================================================ */
+async function loadDiscoveries() {
+  const grid = document.getElementById('discoveries-grid');
+  // Fetch from Wikipedia's "largest known prime" and related pages
+  const topics = [
+    { title: 'Largest known prime number', tag: 'record primes' },
+    { title: 'Mersenne prime', tag: 'Mersenne primes' },
+    { title: 'Prime number theorem', tag: 'prime theory' },
+    { title: 'Twin prime', tag: 'twin primes' },
+  ];
+
+  try {
+    const results = await Promise.all(topics.map(async (topic) => {
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic.title)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      return {
+        title: data.title,
+        excerpt: data.extract ? data.extract.slice(0, 160) + '…' : '',
+        url: data.content_urls?.desktop?.page || '#',
+        tag: topic.tag,
+        modified: data.timestamp ? new Date(data.timestamp).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : '',
+      };
+    }));
+
+    grid.innerHTML = '';
+    results.forEach(item => {
+      const el = document.createElement('a');
+      el.className = 'discovery-item';
+      el.href = item.url;
+      el.target = '_blank';
+      el.rel = 'noopener';
+      el.innerHTML = `
+        <div class="disc-date">${item.modified}</div>
+        <div class="disc-content">
+          <div class="disc-title">${item.title}</div>
+          <div class="disc-excerpt">${item.excerpt}</div>
+        </div>
+        <div class="disc-tag">${item.tag} →</div>
+      `;
+      grid.appendChild(el);
+    });
+  } catch (err) {
+    // fallback: static curated items if API fails
+    grid.innerHTML = `
+      <a class="discovery-item" href="https://en.wikipedia.org/wiki/Largest_known_prime_number" target="_blank" rel="noopener">
+        <div class="disc-date">Oct 2024</div>
+        <div class="disc-content">
+          <div class="disc-title">New largest known prime number discovered</div>
+          <div class="disc-excerpt">M136279841 = 2^136,279,841 − 1, a Mersenne prime with over 41 million digits, discovered by GIMPS volunteer Luke Durant using GPU computing.</div>
+        </div>
+        <div class="disc-tag">record primes →</div>
+      </a>
+      <a class="discovery-item" href="https://en.wikipedia.org/wiki/Twin_prime" target="_blank" rel="noopener">
+        <div class="disc-date">ongoing</div>
+        <div class="disc-content">
+          <div class="disc-title">Twin prime conjecture: still open</div>
+          <div class="disc-excerpt">Are there infinitely many pairs of primes differing by 2? Yitang Zhang's 2013 breakthrough proved bounded gaps, but the conjecture itself remains unproven.</div>
+        </div>
+        <div class="disc-tag">open problems →</div>
+      </a>
+      <a class="discovery-item" href="https://en.wikipedia.org/wiki/Riemann_hypothesis" target="_blank" rel="noopener">
+        <div class="disc-date">since 1859</div>
+        <div class="disc-content">
+          <div class="disc-title">Riemann Hypothesis: $1M still unclaimed</div>
+          <div class="disc-excerpt">One of the Millennium Prize Problems, it predicts the distribution of prime numbers via the zeros of the Riemann zeta function. Verified for the first 10^13 zeros - but never proven.</div>
+        </div>
+        <div class="disc-tag">open problems →</div>
+      </a>
+      <a class="discovery-item" href="https://www.mersenne.org/" target="_blank" rel="noopener">
+        <div class="disc-date">active</div>
+        <div class="disc-content">
+          <div class="disc-title">GIMPS: the search continues</div>
+          <div class="disc-excerpt">The Great Internet Mersenne Prime Search runs on thousands of volunteer computers worldwide, testing candidates 24/7. 51 Mersenne primes found so far - the next could be on any machine.</div>
+        </div>
+        <div class="disc-tag">distributed computing →</div>
+      </a>
+    `;
+  }
+}
+loadDiscoveries();
+</script>
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piano Cartesiano Interattivo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f0f11; --surface: #16161a; --border: #2a2a32;
+    --text: #e8e8f0; --muted: #6b6b80; --accent: #7c6af7;
+    --A: #f76a8a; --B: #7c6af7; --C: #6af7c4;
+    --mid: #f7c46a; --dist: #6af7c4; --area: #c46af7;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 12px 48px; gap: 16px;
+  }
+  header { text-align: center; }
+  header h1 {
+    font-family: 'DM Mono', monospace; font-weight: 300;
+    font-size: 1.05rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  header p { font-size: 0.75rem; color: var(--muted); margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  .main {
+    display: flex; gap: 20px; align-items: flex-start;
+    width: 100%; max-width: 1060px; flex-wrap: wrap; justify-content: center;
+  }
+
+  .canvas-wrap {
+    border: 1px solid var(--border); border-radius: 4px;
+    overflow: hidden; background: var(--surface); flex-shrink: 0;
+  }
+  canvas { display: block; cursor: crosshair; }
+
+  .panel { display: flex; flex-direction: column; gap: 10px; min-width: 220px; max-width: 260px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 14px; }
+  .card-title {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 10px;
+  }
+  .vrow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-family: 'DM Mono', monospace; font-size: 0.8rem; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .dot-A { background: var(--A); } .dot-B { background: var(--B); } .dot-C { background: var(--C); }
+  .coords { color: var(--muted); font-size: 0.76rem; }
+
+  .rrow { margin-bottom: 8px; }
+  .rlabel { font-family: 'DM Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); display: block; margin-bottom: 2px; }
+  .rval { font-family: 'DM Mono', monospace; font-size: 1rem; }
+  .c-mid { color: var(--mid); } .c-dist { color: var(--dist); } .c-area { color: var(--area); }
+  .active-info { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--accent); text-align: center; min-height: 14px; }
+
+  /* Steps */
+  .steps-wrap {
+    width: 100%; max-width: 1060px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  }
+  .scard { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 16px; }
+  .scard-title {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+  .t-mid { color: var(--mid); } .t-dist { color: var(--dist); } .t-area { color: var(--area); }
+
+  .step {
+    font-family: 'DM Mono', monospace; font-size: 0.74rem;
+    line-height: 1.75; color: var(--muted); margin-bottom: 2px;
+  }
+  .sn { font-size: 0.58rem; opacity: 0.45; margin-right: 4px; }
+  .v  { color: var(--text); }
+  .vm { color: var(--mid); font-weight: 500; }
+  .vd { color: var(--dist); font-weight: 500; }
+  .va { color: var(--area); font-weight: 500; }
+
+  /* ---- MOBILE ---- */
+  @media (max-width: 600px) {
+    body { padding: 14px 10px 40px; gap: 12px; }
+
+    header h1 { font-size: 0.9rem; }
+    header p  { font-size: 0.7rem; }
+
+    /* canvas fills the screen width */
+    .canvas-wrap { width: 100%; }
+
+    /* panel goes full width below canvas, two columns side by side */
+    .main { flex-direction: column; align-items: stretch; gap: 12px; }
+    .panel { max-width: 100%; flex-direction: row; flex-wrap: wrap; gap: 10px; }
+    .panel .card { flex: 1; min-width: 140px; padding: 10px; }
+
+    /* results: smaller font */
+    .rval { font-size: 0.88rem; }
+    .vrow { font-size: 0.75rem; }
+
+    /* steps: single column */
+    .steps-wrap { grid-template-columns: 1fr; gap: 10px; }
+    .step { font-size: 0.7rem; line-height: 1.65; }
+    .scard { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Piano Cartesiano</h1>
+  <p>trascina i vertici · i passaggi si aggiornano in tempo reale</p>
+</header>
+
+<div class="main">
+  <div class="canvas-wrap">
+    <canvas id="canvas" width="500" height="500"></canvas>
+  </div>
+
+  <div class="panel">
+    <div class="card">
+      <div class="card-title">Vertici</div>
+      <div class="vrow"><div class="dot dot-A"></div><span style="font-family:DM Mono,monospace;width:14px;font-size:.8rem">A</span><span class="coords">(<span id="ax">—</span>, <span id="ay">—</span>)</span></div>
+      <div class="vrow"><div class="dot dot-B"></div><span style="font-family:DM Mono,monospace;width:14px;font-size:.8rem">B</span><span class="coords">(<span id="bx">—</span>, <span id="by">—</span>)</span></div>
+      <div class="vrow"><div class="dot dot-C"></div><span style="font-family:DM Mono,monospace;width:14px;font-size:.8rem">C</span><span class="coords">(<span id="cx">—</span>, <span id="cy">—</span>)</span></div>
+      <div class="active-info" id="activeInfo"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Risultati</div>
+      <div class="rrow"><span class="rlabel">Punto medio AB</span><span class="rval c-mid" id="resMid">—</span></div>
+      <div class="rrow"><span class="rlabel">|AB|</span><span class="rval c-dist" id="resAB">—</span></div>
+      <div class="rrow"><span class="rlabel">|BC|</span><span class="rval c-dist" id="resBC">—</span></div>
+      <div class="rrow"><span class="rlabel">|CA|</span><span class="rval c-dist" id="resCA">—</span></div>
+      <div class="rrow"><span class="rlabel">Area</span><span class="rval c-area" id="resArea">—</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="steps-wrap">
+  <div class="scard">
+    <div class="scard-title t-mid">Punto medio AB — passaggi</div>
+    <div class="step" id="m1"></div>
+    <div class="step" id="m2"></div>
+    <div class="step" id="m3"></div>
+  </div>
+  <div class="scard">
+    <div class="scard-title t-dist">Distanza |AB| — passaggi</div>
+    <div class="step" id="d1"></div>
+    <div class="step" id="d2"></div>
+    <div class="step" id="d3"></div>
+    <div class="step" id="d4"></div>
+  </div>
+  <div class="scard">
+    <div class="scard-title t-area">Area — passaggi</div>
+    <div class="step" id="a1"></div>
+    <div class="step" id="a2"></div>
+    <div class="step" id="a3"></div>
+    <div class="step" id="a4"></div>
+    <div class="step" id="a5"></div>
+    <div class="step" id="a6"></div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+// Dynamic canvas size
+let W, H, OX, OY, CELL, RANGE;
+
+function resizeCanvas() {
+  const isMobile = window.innerWidth <= 600;
+  const size = isMobile ? Math.min(window.innerWidth - 20, 420) : 500;
+  canvas.width  = size;
+  canvas.height = size;
+  W = H = size;
+  OX = OY = size / 2;
+  CELL = isMobile ? Math.floor(size / 14) : 38;
+  RANGE = Math.floor(size / 2 / CELL);
+  draw();
+}
+
+const CLR = {
+  A:'#f76a8a', B:'#7c6af7', C:'#6af7c4',
+  mid:'#f7c46a', tri:'rgba(124,106,247,0.07)', triS:'rgba(124,106,247,0.28)'
+};
+
+let pts = [{x:-3,y:-2},{x:3,y:-2},{x:0,y:3}];
+let drag = null, hover = null;
+
+const toC = (mx,my) => ({x: OX+mx*CELL, y: OY-my*CELL});
+const toM = (cx,cy) => ({x:(cx-OX)/CELL, y:-(cy-OY)/CELL});
+const snap = v => Math.round(v*2)/2;
+const fmt  = v => Number.isInteger(v) ? String(v) : v.toFixed(1);
+const f2   = v => v.toFixed(2);
+const s    = (id,h) => document.getElementById(id).innerHTML = h;
+
+function drawGrid() {
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#16161a'; ctx.fillRect(0,0,W,H);
+  for (let i=-RANGE;i<=RANGE;i++) {
+    const cx=OX+i*CELL, cy=OY+i*CELL;
+    ctx.strokeStyle = i===0?'#2a2a3a':'#1e1e26';
+    ctx.lineWidth   = i===0?1.5:1;
+    ctx.beginPath(); ctx.moveTo(cx,0); ctx.lineTo(cx,H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,cy); ctx.lineTo(W,cy); ctx.stroke();
+    if (i!==0) {
+      ctx.fillStyle='#2a2a42'; ctx.font='10px DM Mono,monospace';
+      ctx.textAlign='center'; ctx.fillText(i, cx, OY+14);
+      ctx.textAlign='right';  ctx.fillText(-i, OX-5, cy+4);
+    }
+  }
+  ctx.strokeStyle='#38384e'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(8,OY);   ctx.lineTo(W-8,OY);  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(OX,H-8); ctx.lineTo(OX,8);    ctx.stroke();
+  ctx.fillStyle='#38384e'; ctx.font='11px DM Mono,monospace';
+  ctx.textAlign='center'; ctx.fillText('x',W-10,OY-8);
+  ctx.fillText('y',OX+12,13); ctx.fillText('O',OX+10,OY+14);
+}
+
+function drawTri() {
+  const [a,b,c] = pts.map(p=>toC(p.x,p.y));
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.lineTo(c.x,c.y); ctx.closePath();
+  ctx.fillStyle=CLR.tri; ctx.fill();
+  ctx.strokeStyle=CLR.triS; ctx.lineWidth=1.5; ctx.stroke();
+}
+
+function drawMid() {
+  const mx=(pts[0].x+pts[1].x)/2, my=(pts[0].y+pts[1].y)/2;
+  const cm=toC(mx,my);
+  ctx.beginPath(); ctx.arc(cm.x,cm.y,5,0,Math.PI*2);
+  ctx.fillStyle=CLR.mid; ctx.fill();
+  ctx.fillStyle=CLR.mid; ctx.font='10px DM Mono,monospace'; ctx.textAlign='left';
+  ctx.fillText(`M(${fmt(mx)}, ${fmt(my)})`, cm.x+8, cm.y-5);
+}
+
+function drawVerts() {
+  const labels=['A','B','C'], colors=[CLR.A,CLR.B,CLR.C];
+  pts.forEach((p,i)=>{
+    const cp=toC(p.x,p.y), on=hover===i||drag===i;
+    if (on) { ctx.beginPath(); ctx.arc(cp.x,cp.y,14,0,Math.PI*2); ctx.fillStyle=colors[i]+'22'; ctx.fill(); }
+    ctx.beginPath(); ctx.arc(cp.x,cp.y,8,0,Math.PI*2); ctx.strokeStyle=colors[i]; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.beginPath(); ctx.arc(cp.x,cp.y,4,0,Math.PI*2); ctx.fillStyle=colors[i]; ctx.fill();
+    ctx.fillStyle=colors[i]; ctx.font='bold 12px DM Mono,monospace'; ctx.textAlign='center';
+    ctx.fillText(labels[i], cp.x, cp.y-14);
+    ctx.fillStyle=colors[i]+'aa'; ctx.font='10px DM Mono,monospace';
+    ctx.fillText(`(${fmt(p.x)}, ${fmt(p.y)})`, cp.x, cp.y-26);
+  });
+}
+
+function updatePanel() {
+  const [a,b,c] = pts;
+  document.getElementById('ax').textContent=fmt(a.x);
+  document.getElementById('ay').textContent=fmt(a.y);
+  document.getElementById('bx').textContent=fmt(b.x);
+  document.getElementById('by').textContent=fmt(b.y);
+  document.getElementById('cx').textContent=fmt(c.x);
+  document.getElementById('cy').textContent=fmt(c.y);
+
+  // --- MIDPOINT ---
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  document.getElementById('resMid').textContent=`(${f2(mx)}, ${f2(my)})`;
+  s('m1',`<span class="sn">1</span><span class="v">Formula: ((x₁+x₂)/2 , (y₁+y₂)/2)</span>`);
+  s('m2',`<span class="sn">2</span><span class="v">x: (${fmt(a.x)}+${fmt(b.x)})/2 = ${f2(mx)}</span>`);
+  s('m3',`<span class="sn">3</span><span class="v">y: (${fmt(a.y)}+${fmt(b.y)})/2 = ${f2(my)}</span><br><span style="margin-left:16px" class="vm">→ M = (${f2(mx)}, ${f2(my)})</span>`);
+
+  // --- DISTANCE AB ---
+  const dx=b.x-a.x, dy=b.y-a.y;
+  const dx2=dx*dx, dy2=dy*dy, sum2=dx2+dy2;
+  const dAB=Math.sqrt(sum2);
+  document.getElementById('resAB').textContent=f2(dAB);
+  document.getElementById('resBC').textContent=f2(Math.sqrt((c.x-b.x)**2+(c.y-b.y)**2));
+  document.getElementById('resCA').textContent=f2(Math.sqrt((a.x-c.x)**2+(a.y-c.y)**2));
+  s('d1',`<span class="sn">1</span><span class="v">Formula: √((x₂−x₁)²+(y₂−y₁)²)</span>`);
+  s('d2',`<span class="sn">2</span><span class="v">Δx = ${fmt(b.x)}−(${fmt(a.x)}) = <b>${fmt(dx)}</b> &nbsp; Δy = ${fmt(b.y)}−(${fmt(a.y)}) = <b>${fmt(dy)}</b></span>`);
+  s('d3',`<span class="sn">3</span><span class="v">Δx² = ${f2(dx2)} &nbsp; Δy² = ${f2(dy2)} &nbsp; somma = ${f2(sum2)}</span>`);
+  s('d4',`<span class="sn">4</span><span class="v">√${f2(sum2)} = <span class="vd">${f2(dAB)}</span></span>`);
+
+  // --- AREA (metodo rettangolo contenitore) ---
+  const xMin=Math.min(a.x,b.x,c.x), xMax=Math.max(a.x,b.x,c.x);
+  const yMin=Math.min(a.y,b.y,c.y), yMax=Math.max(a.y,b.y,c.y);
+  const base = xMax-xMin, altezza = yMax-yMin;
+  const Arett = base * altezza;
+  const R1 = Math.abs(a.x-b.x) * Math.abs(a.y-b.y);
+  const R2 = Math.abs(b.x-c.x) * Math.abs(b.y-c.y);
+  const R3 = Math.abs(c.x-a.x) * Math.abs(c.y-a.y);
+  const area = Arett - R1/2 - R2/2 - R3/2;
+  const collinear = Math.abs((b.x-a.x)*(c.y-a.y) - (c.x-a.x)*(b.y-a.y)) < 0.001;
+
+  document.getElementById('resArea').textContent = collinear ? '—' : f2(Math.abs(area));
+
+  if (collinear) {
+    s('a1',`<span class="sn">!</span><span class="v" style="color:#f76a8a">A, B, C sono allineati: i tre punti stanno sulla stessa retta.</span>`);
+    s('a2',`<span class="sn"> </span><span class="v" style="color:var(--muted)">Un triangolo ha bisogno di tre punti non allineati. Sposta un vertice per formare un triangolo.</span>`);
+    s('a3',''); s('a4',''); s('a5',''); s('a6','');
+  } else {
+    s('a1',`<span class="sn">1</span><span class="v">Rettangolo: base = ${fmt(xMax)}−(${fmt(xMin)}) = <b>${fmt(base)}</b>, altezza = ${fmt(yMax)}−(${fmt(yMin)}) = <b>${fmt(altezza)}</b></span>`);
+    s('a2',`<span class="sn">2</span><span class="v">A<sub>rett</sub> = ${fmt(base)} × ${fmt(altezza)} = <b>${f2(Arett)}</b></span>`);
+    s('a3',`<span class="sn">3</span><span class="v">R₁/2 = (${fmt(Math.abs(a.x-b.x))}×${fmt(Math.abs(a.y-b.y))})/2 = <b>${f2(R1/2)}</b> &nbsp; R₂/2 = <b>${f2(R2/2)}</b> &nbsp; R₃/2 = <b>${f2(R3/2)}</b></span>`);
+    s('a4',`<span class="sn">4</span><span class="v">Area = ${f2(Arett)} − ${f2(R1/2)} − ${f2(R2/2)} − ${f2(R3/2)}</span>`);
+    s('a5',`<span class="sn">5</span><span class="v">Area = <span class="va">${f2(Math.abs(area))}</span></span>`);
+    s('a6','');
+  }
+}
+
+function drawBoundingRect() {
+  const [a,b,c] = pts;
+  const xMin = Math.min(a.x,b.x,c.x), xMax = Math.max(a.x,b.x,c.x);
+  const yMin = Math.min(a.y,b.y,c.y), yMax = Math.max(a.y,b.y,c.y);
+  const tl = toC(xMin, yMax), br = toC(xMax, yMin);
+  const rw = br.x - tl.x, rh = br.y - tl.y;
+
+  // Bounding rectangle (dashed)
+  ctx.setLineDash([5,4]);
+  ctx.strokeStyle = 'rgba(196,106,247,0.4)';
+  ctx.lineWidth = 1.2;
+  ctx.strokeRect(tl.x, tl.y, rw, rh);
+  ctx.setLineDash([]);
+
+  // Three corner triangles shaded
+  const [A,B,C] = pts.map(p=>toC(p.x,p.y));
+  const corners = [
+    toC(xMin,yMax), toC(xMax,yMax), toC(xMax,yMin), toC(xMin,yMin)
+  ];
+
+  // Identify which corner each vertex "belongs to" by proximity
+  // The three corner triangles are defined by: corner, vertex_on_one_side, vertex_on_adjacent_side
+  // We compute them generically: for each of the 3 vertices, find its corner of the bbox
+  // and shade the right triangle formed by that vertex and the two bbox corners adjacent to it
+  const vertCanvas = [A,B,C];
+  const vertMath   = [a,b,c];
+
+  ctx.fillStyle = 'rgba(196,106,247,0.12)';
+
+  for (let i=0;i<3;i++) {
+    const vx = vertMath[i].x, vy = vertMath[i].y;
+    // corner of bbox closest to this vertex
+    const cx_ = vx <= (xMin+xMax)/2 ? xMin : xMax;
+    const cy_ = vy <= (yMin+yMax)/2 ? yMin : yMax;
+    const corner = toC(cx_, cy_);
+    // two adjacent corners (same column or row as vertex)
+    const adjH = toC(cx_ === xMin ? xMax : xMin, cy_); // same y, other x
+    const adjV = toC(cx_, cy_ === yMin ? yMax : yMin); // same x, other y
+
+    // The right triangle is: vertex, adjH projected onto vertex row, adjV projected onto vertex col
+    // Simpler: corner rect for this vertex is (vertex, hAdj at vertex.y, corner, vAdj at vertex.x)
+    const vC = vertCanvas[i];
+    ctx.beginPath();
+    ctx.moveTo(vC.x, vC.y);
+    ctx.lineTo(corner.x, vC.y);   // horizontal leg
+    ctx.lineTo(corner.x, corner.y);
+    ctx.lineTo(vC.x, corner.y);   // vertical leg
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function draw() { drawGrid(); drawBoundingRect(); drawTri(); drawMid(); drawVerts(); updatePanel(); }
+
+function getHit(cx,cy) {
+  for (let i=0;i<pts.length;i++) {
+    const cp=toC(pts[i].x,pts[i].y);
+    if (Math.hypot(cx-cp.x,cy-cp.y)<16) return i;
+  }
+  return null;
+}
+
+canvas.addEventListener('mousedown', e=>{
+  const r=canvas.getBoundingClientRect();
+  const h=getHit(e.clientX-r.left, e.clientY-r.top);
+  if (h!==null) drag=h;
+});
+canvas.addEventListener('mousemove', e=>{
+  const r=canvas.getBoundingClientRect();
+  const cx=e.clientX-r.left, cy=e.clientY-r.top;
+  if (drag!==null) {
+    const m=toM(cx,cy);
+    pts[drag]={x:snap(m.x),y:snap(m.y)};
+    canvas.style.cursor='grabbing';
+  } else {
+    hover=getHit(cx,cy);
+    canvas.style.cursor=hover!==null?'grab':'crosshair';
+    const labels=['A','B','C'];
+    document.getElementById('activeInfo').textContent=hover!==null?`· trascina ${labels[hover]} ·`:'';
+  }
+  draw();
+});
+canvas.addEventListener('mouseup',    ()=>{ drag=null; });
+canvas.addEventListener('mouseleave', ()=>{ drag=null; hover=null; draw(); });
+
+canvas.addEventListener('touchstart', e=>{ e.preventDefault(); const r=canvas.getBoundingClientRect(),t=e.touches[0]; const h=getHit(t.clientX-r.left,t.clientY-r.top); if(h!==null)drag=h; },{passive:false});
+canvas.addEventListener('touchmove',  e=>{ e.preventDefault(); if(drag===null)return; const r=canvas.getBoundingClientRect(),t=e.touches[0]; const m=toM(t.clientX-r.left,t.clientY-r.top); pts[drag]={x:snap(m.x),y:snap(m.y)}; draw(); },{passive:false});
+canvas.addEventListener('touchend',   ()=>{ drag=null; });
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+</script>
+</body>
+</html>

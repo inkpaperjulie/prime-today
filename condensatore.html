@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carica del Condensatore</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0d1117;
+  --surface: #161b27;
+  --surface2: #1c2333;
+  --border: #2a3348;
+  --text: #cdd9f5;
+  --muted: #566280;
+  --V: #f0a05a;       /* tensione - ambra */
+  --I: #5abef0;       /* corrente - azzurro */
+  --tau: #a0e87a;     /* tau - verde */
+  --cursor: #f5f5f5;
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px 52px;
+  gap: 20px;
+}
+
+header { text-align: center; }
+header h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 600;
+  font-size: 1.4rem;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+header p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin-top: 5px;
+  letter-spacing: 0.06em;
+}
+
+/* schema circuito */
+.circuit-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.circuit-box {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* layout */
+.layout {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  max-width: 1040px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* grafici */
+.graphs-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.graph-wrap {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  overflow: hidden;
+  position: relative;
+}
+.graph-label {
+  position: absolute;
+  top: 8px; left: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+
+/* pannello destra */
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 250px;
+  max-width: 300px;
+  flex: 1;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+}
+.card-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+
+/* sliders */
+.slider-group { margin-bottom: 14px; }
+.slider-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 5px;
+}
+.slider-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.slider-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.sv-V0  { color: var(--V); }
+.sv-R   { color: #c878e8; }
+.sv-C   { color: #78c8e8; }
+.sv-tau { color: var(--tau); }
+
+input[type=range] {
+  width: 100%;
+  accent-color: var(--muted);
+  cursor: pointer;
+  height: 3px;
+}
+
+/* tau display */
+.tau-display {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 14px;
+  margin-top: 4px;
+}
+.tau-display .tau-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.tau-display .tau-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--tau);
+}
+.tau-display .tau-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+/* valori istantanei */
+.instant-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.instant-box {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px;
+  text-align: center;
+}
+.instant-box .ilabel {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 3px;
+}
+.instant-box .ival {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+.iv-V { color: var(--V); }
+.iv-I { color: var(--I); }
+
+/* t slider */
+.t-slider-group {
+  margin-bottom: 0;
+}
+
+/* passaggi */
+.step {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  line-height: 1.85;
+  color: var(--muted);
+  margin-bottom: 1px;
+}
+.sn { font-size: 0.54rem; opacity: 0.35; margin-right: 5px; }
+.v   { color: var(--text); }
+.vV  { color: var(--V);  font-weight: 500; }
+.vI  { color: var(--I);  font-weight: 500; }
+.vtau{ color: var(--tau); font-weight: 500; }
+.vR  { color: #c878e8; font-weight: 500; }
+.vC  { color: #78c8e8; font-weight: 500; }
+
+/* mobile */
+@media (max-width: 620px) {
+  body { padding: 14px 10px 40px; gap: 12px; }
+  header h1 { font-size: 1.15rem; }
+  .layout { flex-direction: column; align-items: stretch; }
+  .right-col { max-width: 100%; min-width: 0; }
+  .graphs-col { width: 100%; }
+  .step { font-size: 0.65rem; }
+  .instant-box .ival { font-size: 0.82rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Carica del Condensatore</h1>
+  <p>circuito RC · V(t) = V₀(1 − e<sup>−t/τ</sup>) · I(t) = (V₀/R)·e<sup>−t/τ</sup></p>
+</header>
+
+<div class="layout">
+
+  <!-- GRAFICI -->
+  <div class="graphs-col">
+    <div class="graph-wrap">
+      <span class="graph-label" style="color:var(--V)">V(t) — tensione</span>
+      <canvas id="cvV" width="480" height="210"></canvas>
+    </div>
+    <div class="graph-wrap">
+      <span class="graph-label" style="color:var(--I)">I(t) — corrente</span>
+      <canvas id="cvI" width="480" height="210"></canvas>
+    </div>
+  </div>
+
+  <!-- PANNELLO -->
+  <div class="right-col">
+
+    <div class="card">
+      <div class="card-title">Parametri circuito</div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-name">Tensione <span class="sv-V0">V₀</span></span>
+          <span class="slider-val sv-V0" id="v0Val">10 V</span>
+        </div>
+        <input type="range" id="v0Slider" min="1" max="24" value="10" step="1">
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-name">Resistenza <span class="sv-R">R</span></span>
+          <span class="slider-val sv-R" id="rVal">1000 Ω</span>
+        </div>
+        <input type="range" id="rSlider" min="100" max="10000" value="1000" step="100">
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-name">Capacità <span class="sv-C">C</span></span>
+          <span class="slider-val sv-C" id="cVal">1000 µF</span>
+        </div>
+        <input type="range" id="cSlider" min="100" max="5000" value="1000" step="100">
+      </div>
+
+      <div class="tau-display">
+        <div>
+          <div class="tau-label">τ = R·C</div>
+          <div class="tau-val" id="tauVal">1.00 s</div>
+        </div>
+        <div style="margin-left:auto">
+          <div class="tau-sub" id="tauSub"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Istante di osservazione</div>
+      <div class="slider-group t-slider-group">
+        <div class="slider-label">
+          <span class="slider-name">t</span>
+          <span class="slider-val" style="color:var(--cursor)" id="tVal">0.00 s</span>
+        </div>
+        <input type="range" id="tSlider" min="0" max="100" value="0" step="1">
+      </div>
+      <div class="instant-row" style="margin-top:12px">
+        <div class="instant-box">
+          <span class="ilabel">V(t)</span>
+          <span class="ival iv-V" id="instV">—</span>
+        </div>
+        <div class="instant-box">
+          <span class="ilabel">I(t)</span>
+          <span class="ival iv-I" id="instI">—</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Passaggi</div>
+      <div class="step" id="s1"></div>
+      <div class="step" id="s2"></div>
+      <div class="step" id="s3"></div>
+      <div class="step" id="s4"></div>
+      <div class="step" id="s5"></div>
+      <div class="step" id="s6"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ---- state ----
+let V0 = 10, R = 1000, C = 0.001, tNorm = 0;
+
+const cvV = document.getElementById('cvV');
+const cvI = document.getElementById('cvI');
+const ctxV = cvV.getContext('2d');
+const ctxI = cvI.getContext('2d');
+
+// ---- helpers ----
+const f2  = v => v.toFixed(2);
+const f3  = v => v.toFixed(3);
+const s   = (id,h) => document.getElementById(id).innerHTML = h;
+
+function fmtR(r) { return r >= 1000 ? `${(r/1000).toFixed(1)} kΩ` : `${r} Ω`; }
+function fmtC(c) { return `${Math.round(c*1e6)} µF`; }
+function fmtTau(tau) {
+  if (tau < 0.001) return `${f2(tau*1000)} ms`;
+  if (tau >= 1)    return `${f2(tau)} s`;
+  return `${f2(tau*1000)} ms`;
+}
+function fmtT(t) {
+  if (t < 0.001) return `${f2(t*1000)} ms`;
+  if (t >= 1)    return `${f2(t)} s`;
+  return `${f2(t*1000)} ms`;
+}
+
+// ---- resize ----
+function resizeGraphs() {
+  const mobile = window.innerWidth <= 620;
+  const W = mobile ? Math.min(window.innerWidth - 20, 460) : 480;
+  const H = mobile ? 170 : 210;
+  [cvV, cvI].forEach(c => { c.width = W; c.height = H; });
+  drawAll();
+}
+
+// ---- draw graph ----
+function drawGraph(cvs, ctx, color, yFn, yMax, yLabel, tCur, tau) {
+  const W = cvs.width, H = cvs.height;
+  const PAD_L = 50, PAD_R = 16, PAD_T = 32, PAD_B = 36;
+  const gW = W - PAD_L - PAD_R, gH = H - PAD_T - PAD_B;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#161b27'; ctx.fillRect(0,0,W,H);
+
+  const tMax = 5 * tau; // show 5τ
+  const toGx = t => PAD_L + (t/tMax)*gW;
+  const toGy = v => H - PAD_B - (v/yMax)*gH;
+
+  // grid
+  ctx.strokeStyle = '#1e2840'; ctx.lineWidth = 1;
+  for (let i=0; i<=5; i++) {
+    const gx = PAD_L + (i/5)*gW;
+    const gy = H - PAD_B - (i/5)*gH;
+    ctx.beginPath(); ctx.moveTo(gx, PAD_T); ctx.lineTo(gx, H-PAD_B); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(PAD_L, gy); ctx.lineTo(W-PAD_R, gy); ctx.stroke();
+  }
+
+  // tau markers on x axis
+  ctx.setLineDash([3,3]);
+  ctx.strokeStyle = '#a0e87a30'; ctx.lineWidth = 1;
+  for (let i=1; i<=5; i++) {
+    const gx = toGx(i*tau);
+    ctx.beginPath(); ctx.moveTo(gx, PAD_T); ctx.lineTo(gx, H-PAD_B); ctx.stroke();
+    ctx.fillStyle = '#a0e87a55';
+    ctx.font = '8px JetBrains Mono,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${i}τ`, gx, H-PAD_B+10);
+  }
+  ctx.setLineDash([]);
+
+  // axes
+  ctx.strokeStyle = '#3a4a6a'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(PAD_L, PAD_T); ctx.lineTo(PAD_L, H-PAD_B); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(PAD_L, H-PAD_B); ctx.lineTo(W-PAD_R, H-PAD_B); ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle = '#566280'; ctx.font = '9px JetBrains Mono,monospace';
+  ctx.textAlign = 'center'; ctx.fillText('t (s)', PAD_L+gW/2, H-4);
+  ctx.save(); ctx.translate(11, PAD_T+gH/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText(yLabel, 0, 0); ctx.restore();
+
+  // tick labels y
+  for (let i=0; i<=4; i++) {
+    const v = (i/4)*yMax;
+    ctx.textAlign = 'right';
+    ctx.fillText(f2(v), PAD_L-4, toGy(v)+3);
+  }
+
+  // curve
+  ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let px=0; px<=gW; px++) {
+    const t = (px/gW)*tMax;
+    const y = yFn(t);
+    const gx = PAD_L+px, gy = toGy(y);
+    px===0 ? ctx.moveTo(gx,gy) : ctx.lineTo(gx,gy);
+  }
+  ctx.stroke();
+
+  // current time marker
+  if (tCur <= tMax) {
+    const gxT = toGx(tCur);
+    const yT  = yFn(tCur);
+    const gyT = toGy(yT);
+
+    // vertical dashed line
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle = '#ffffff30'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(gxT, PAD_T); ctx.lineTo(gxT, H-PAD_B); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // horizontal dashed to y axis
+    ctx.setLineDash([3,3]);
+    ctx.strokeStyle = color+'55'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD_L, gyT); ctx.lineTo(gxT, gyT); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // dot
+    ctx.beginPath(); ctx.arc(gxT, gyT, 5, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.strokeStyle = '#161b27'; ctx.lineWidth = 1.5; ctx.stroke();
+
+    // value label
+    ctx.fillStyle = color;
+    ctx.font = 'bold 10px JetBrains Mono,monospace';
+    ctx.textAlign = gxT > W-80 ? 'right' : 'left';
+    const lx = gxT > W-80 ? gxT-8 : gxT+8;
+    const ly = gyT < PAD_T+16 ? gyT+16 : gyT-8;
+    ctx.fillText(f2(yT), lx, ly);
+  }
+}
+
+function drawAll() {
+  const tau = R * C;
+  const tCur = tNorm * 5 * tau;
+
+  drawGraph(cvV, ctxV,
+    '#f0a05a',
+    t => V0 * (1 - Math.exp(-t/tau)),
+    V0 * 1.05,
+    'V (V)',
+    tCur, tau
+  );
+
+  drawGraph(cvI, ctxI,
+    '#5abef0',
+    t => (V0/R) * Math.exp(-t/tau),
+    (V0/R) * 1.05,
+    'I (A)',
+    tCur, tau
+  );
+}
+
+// ---- panel ----
+function updatePanel() {
+  const tau = R * C;
+  const tCur = tNorm * 5 * tau;
+  const Vt = V0 * (1 - Math.exp(-tCur/tau));
+  const It = (V0/R) * Math.exp(-tCur/tau);
+  const I0 = V0/R;
+
+  // labels
+  document.getElementById('v0Val').textContent = `${V0} V`;
+  document.getElementById('rVal').textContent  = fmtR(R);
+  document.getElementById('cVal').textContent  = fmtC(C);
+  document.getElementById('tauVal').textContent = fmtTau(tau);
+  document.getElementById('tVal').textContent  = fmtT(tCur);
+  document.getElementById('tauSub').innerHTML  = `a t=τ:<br>V = ${f2(V0*0.632)} V<br>I = ${f2(I0*0.368)} A`;
+
+  // instant values
+  document.getElementById('instV').textContent = `${f2(Vt)} V`;
+  document.getElementById('instI').textContent = `${(It*1000).toFixed(2)} mA`;
+
+  // steps
+  s('s1',`<span class="sn">1</span><span class="v">τ = <span class="vR">R</span>·<span class="vC">C</span> = <span class="vR">${fmtR(R)}</span> · <span class="vC">${fmtC(C)}</span> = <span class="vtau">${fmtTau(tau)}</span></span>`);
+  s('s2',`<span class="sn">2</span><span class="v">I₀ = <span class="vV">V₀</span>/<span class="vR">R</span> = ${f2(V0)}/${fmtR(R)} = <span class="vI">${f2(I0*1000)} mA</span></span>`);
+  s('s3',`<span class="sn">3</span><span class="v">A t = <span class="vtau">${fmtT(tCur)}</span>:</span>`);
+  s('s4',`<span class="sn"> </span><span class="v">V(t) = ${f2(V0)}·(1−e<sup>−${fmtT(tCur)}/${fmtTau(tau)}</sup>) = <span class="vV">${f2(Vt)} V</span></span>`);
+  s('s5',`<span class="sn"> </span><span class="v">I(t) = ${f2(I0*1000)}·e<sup>−${fmtT(tCur)}/${fmtTau(tau)}</sup> mA = <span class="vI">${(It*1000).toFixed(2)} mA</span></span>`);
+  s('s6',`<span class="sn">4</span><span class="v">Carica al ${Math.round((Vt/V0)*100)}% · a 5τ il condensatore è al 99.3%</span>`);
+}
+
+function update() {
+  V0 = parseInt(document.getElementById('v0Slider').value);
+  R  = parseInt(document.getElementById('rSlider').value);
+  C  = parseInt(document.getElementById('cSlider').value) / 1e6;
+  tNorm = parseInt(document.getElementById('tSlider').value) / 100;
+  updatePanel();
+  drawAll();
+}
+
+['v0Slider','rSlider','cSlider','tSlider'].forEach(id =>
+  document.getElementById(id).addEventListener('input', update)
+);
+
+window.addEventListener('resize', resizeGraphs);
+resizeGraphs();
+</script>
+</body>
+</html>
