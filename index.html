@@ -370,11 +370,19 @@
         <div class="tool-arrow">open tool →</div>
       </a>
 
-      <!-- 
-        Add your other tools below following the same pattern.
-        Replace href with the filename of your HTML tool.
-        Example:
-      -->
+      <a class="tool-card" href="fattorizzazione.html">
+        <div class="tool-tag">mathematics · interactive</div>
+        <div class="tool-title">Interactive Factorization</div>
+        <div class="tool-desc">Enter any number and watch it decompose into prime factors step by step. Visualizes the division tree and highlights each prime divisor.</div>
+        <div class="tool-arrow">open tool →</div>
+      </a>
+
+      <a class="tool-card" href="piano_cartesiano.html">
+        <div class="tool-tag">mathematics · geometry</div>
+        <div class="tool-title">Cartesian Plane</div>
+        <div class="tool-desc">Interactive coordinate plane for plotting points, computing distances, midpoints and areas. Drag points directly on the canvas.</div>
+        <div class="tool-arrow">open tool →</div>
+      </a>
 
       <a class="tool-card" href="condensatore.html">
         <div class="tool-tag">electronics · simulation</div>
@@ -390,18 +398,13 @@
         <div class="tool-desc">New simulations and interactive tools added as they're built.</div>
       </div>
 
-      <div class="tool-card placeholder">
-        <div class="tool-tag">coming soon</div>
-        <div class="tool-title" style="color:var(--muted);font-size:16px;"></div>
-      </div>
-
     </div>
   </div>
 
   <footer>
     <div class="footer-text">Prime Today · built with curiosity</div>
     <!-- replace with your actual Substack URL -->
-    <a class="footer-link" href="https://substack.com/@narrativaa33giri" target="_blank" rel="noopener">Narrativa a 33 Giri →</a>
+    <a class="footer-link" href="https://narrativa33giri.substack.com/" target="_blank" rel="noopener">Narrativa a 33 Giri →</a>
   </footer>
 
 </div><!-- /site -->
@@ -507,7 +510,8 @@ const formule = [
   { t: 'pₙ ~ n · ln(n)', n: 'Prime Number Theorem', a: 'Hadamard & de la Vallée Poussin · 1896', c: 'Independently proved in 1896, though conjectured by Gauss at age 15 from prime tables. Around N, roughly 1 in ln(N) numbers is prime.' },
   { t: '∫₋∞^∞ e⁻ˣ² dx = √π', n: 'Gaussian Integral', a: 'Carl Friedrich Gauss · early 1800s', c: 'π appears here with no circle in sight. The result underlies probability theory and quantum mechanics. The trick: square the integral and switch to polar coordinates.' },
 ];
-let fi = 0;
+const _doy = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+let fi = _doy % formule.length;
 function showF() {
   const f = formule[fi];
   document.getElementById('f-body').textContent = f.t;
