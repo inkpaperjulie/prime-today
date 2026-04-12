@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prime Today Widget</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06060a;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.14);
+      --text: #e8e3d5;
+      --muted: rgba(232,227,213,0.38);
+      --accent: #b8a9e8;
+      --accent2: #7ec8a4;
+      --serif: 'DM Serif Display', Georgia, serif;
+      --mono: 'DM Mono', monospace;
+    }
+    html, body {
+      width: 100%; height: 100%;
+      background: transparent;
+      font-family: var(--mono);
+      overflow: hidden;
+    }
+    .widget {
+      background: var(--bg);
+      border: 0.5px solid var(--border2);
+      border-radius: 12px;
+      padding: 20px 22px 16px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    /* subtle background glow */
+    .widget::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 70% 20%, rgba(184,169,232,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .top { position: relative; z-index: 1; }
+    .eyebrow {
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .answer {
+      font-family: var(--serif);
+      font-size: 42px;
+      line-height: 1;
+      margin-bottom: 10px;
+      transition: color 0.4s;
+    }
+    .answer.prime { color: var(--text); }
+    .answer.not-prime { color: rgba(232,227,213,0.35); }
+    .date-str {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .facts {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative; z-index: 1;
+    }
+    .fact-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.025);
+      border: 0.5px solid var(--border);
+      border-radius: 6px;
+    }
+    .fact-label {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .fact-val { font-size: 12px; color: var(--text); }
+    .fact-val.green { color: var(--accent2); }
+    .fact-val.purple { color: var(--accent); }
+    .prime-badge {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-size: 9px;
+      letter-spacing: 0.06em;
+    }
+    .prime-badge.yes {
+      background: rgba(126,200,164,0.12);
+      color: var(--accent2);
+      border: 0.5px solid rgba(126,200,164,0.25);
+    }
+    .prime-badge.no {
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      border: 0.5px solid var(--border);
+    }
+    .footer-link {
+      position: relative; z-index: 1;
+      display: block;
+      margin-top: 12px;
+      text-align: right;
+      font-size: 9px;
+      color: rgba(184,169,232,0.45);
+      text-decoration: none;
+      letter-spacing: 0.08em;
+      transition: color 0.2s;
+    }
+    .footer-link:hover { color: var(--accent); }
+  </style>
+</head>
+<body>
+<div class="widget">
+  <div class="top">
+    <div class="eyebrow">is today prime?</div>
+    <div class="answer" id="answer">—</div>
+    <div class="date-str" id="date-str"></div>
+  </div>
+  <div class="facts">
+    <div class="fact-row">
+      <span class="fact-label">day of year</span>
+      <span class="fact-val" id="doy"></span>
+    </div>
+    <div class="fact-row">
+      <span class="fact-label">nearest prime</span>
+      <span class="fact-val purple" id="nearest"></span>
+    </div>
+    <div class="fact-row">
+      <span class="fact-label">prime gap</span>
+      <span class="fact-val" id="gap"></span>
+    </div>
+  </div>
+  <!-- replace with your actual deployed URL -->
+  <a class="footer-link" href="https://yourusername.github.io/prime-today" target="_blank" rel="noopener">Prime Today →</a>
+</div>
+
+<script>
+  function isPrime(n) {
+    if (n < 2) return false;
+    if (n === 2) return true;
+    if (n % 2 === 0) return false;
+    for (let i = 3; i * i <= n; i += 2) if (n % i === 0) return false;
+    return true;
+  }
+  function prevPrime(n) { let x = n - 1; while (x > 1 && !isPrime(x)) x--; return x; }
+  function nextPrime(n) { let x = n + 1; while (!isPrime(x)) x++; return x; }
+
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const start = new Date(now.getFullYear(), 0, 0);
+  const doy = Math.floor((now - start) / 86400000);
+  const prime = isPrime(doy);
+  const pp = prevPrime(doy), np = nextPrime(doy);
+  const closer = Math.abs(doy - pp) <= Math.abs(np - doy) ? pp : np;
+
+  document.getElementById('answer').textContent = prime ? 'Yes.' : 'Not today.';
+  document.getElementById('answer').className = 'answer ' + (prime ? 'prime' : 'not-prime');
+  document.getElementById('date-str').textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+  document.getElementById('doy').innerHTML = doy + ' &nbsp;<span class="prime-badge ' + (prime ? 'yes' : 'no') + '">' + (prime ? 'prime' : 'composite') + '</span>';
+  document.getElementById('nearest').textContent = closer + (closer < doy ? ' ←' : ' →');
+  document.getElementById('gap').textContent = (np - pp) + '  (between ' + pp + ' and ' + np + ')';
+</script>
+</body>
+</html>

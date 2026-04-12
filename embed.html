@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Embed · Prime Today</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06060a; --surface: rgba(255,255,255,0.03); --surface2: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
+      --text: #e8e3d5; --muted: rgba(232,227,213,0.38);
+      --accent: #b8a9e8; --accent2: #7ec8a4;
+      --serif: 'DM Serif Display', Georgia, serif; --mono: 'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; }
+    .site { max-width: 900px; margin: 0 auto; padding: 0 28px; }
+
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; border-bottom: 0.5px solid var(--border); }
+    .nav-logo { font-family: var(--serif); font-size: 18px; color: var(--text); text-decoration: none; }
+    .nav-back { font-size: 11px; color: var(--muted); text-decoration: none; letter-spacing: 0.1em; transition: color 0.2s; }
+    .nav-back:hover { color: var(--text); }
+
+    .hero { padding: 64px 0 48px; animation: fadeUp 0.5s ease both; }
+    .eyebrow { font-size: 10px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-bottom: 16px; }
+    h1 { font-family: var(--serif); font-size: 48px; font-style: italic; margin-bottom: 16px; line-height: 1.1; }
+    .subtitle { font-size: 13px; color: var(--muted); line-height: 1.7; max-width: 520px; }
+
+    .divider { height: 0.5px; background: var(--border); margin: 8px 0; }
+
+    .section { padding: 48px 0; }
+    .section-title { font-family: var(--serif); font-size: 22px; font-style: italic; margin-bottom: 24px; }
+
+    /* PREVIEW */
+    .preview-wrap {
+      display: grid; grid-template-columns: 240px 1fr; gap: 40px; align-items: start;
+    }
+    .widget-frame {
+      width: 240px; height: 220px; border-radius: 12px; overflow: hidden;
+      border: 0.5px solid var(--border2); flex-shrink: 0;
+    }
+    .widget-frame iframe { width: 100%; height: 100%; border: none; display: block; }
+    .preview-info { display: flex; flex-direction: column; gap: 16px; padding-top: 4px; }
+    .info-block {}
+    .info-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 6px; }
+    .info-val { font-size: 13px; color: var(--text); line-height: 1.6; }
+
+    /* SIZE SWITCHER */
+    .size-btns { display: flex; gap: 8px; margin-bottom: 20px; }
+    .size-btn {
+      background: transparent; border: 0.5px solid var(--border); border-radius: 6px;
+      padding: 5px 14px; font-family: var(--mono); font-size: 10px; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.06em; transition: all 0.2s;
+    }
+    .size-btn:hover { border-color: var(--border2); color: var(--text); }
+    .size-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(184,169,232,0.07); }
+
+    /* CODE BLOCK */
+    .code-wrap {
+      background: rgba(255,255,255,0.025); border: 0.5px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .code-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px; border-bottom: 0.5px solid var(--border);
+    }
+    .code-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+    .copy-btn {
+      background: transparent; border: 0.5px solid var(--border); border-radius: 5px;
+      padding: 4px 12px; font-family: var(--mono); font-size: 10px; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.06em; transition: all 0.2s;
+    }
+    .copy-btn:hover { border-color: var(--border2); color: var(--text); }
+    .copy-btn.copied { color: var(--accent2); border-color: rgba(126,200,164,0.3); }
+    pre {
+      padding: 18px 20px; font-family: var(--mono); font-size: 12px;
+      color: rgba(232,227,213,0.7); line-height: 1.8; overflow-x: auto;
+      white-space: pre-wrap; word-break: break-all;
+    }
+    pre .hl { color: var(--accent); }
+    pre .hl2 { color: var(--accent2); }
+
+    /* NOTES */
+    .notes { display: flex; flex-direction: column; gap: 12px; }
+    .note-row {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 14px 16px; background: var(--surface);
+      border: 0.5px solid var(--border); border-radius: 8px;
+    }
+    .note-num { font-size: 11px; color: var(--accent); min-width: 18px; margin-top: 1px; }
+    .note-text { font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .note-text a { color: var(--accent); text-decoration: none; }
+    .note-text a:hover { text-decoration: underline; }
+
+    footer { border-top: 0.5px solid var(--border); padding: 28px 0; display: flex; justify-content: space-between; margin-top: 20px; }
+    .footer-text { font-size: 11px; color: var(--muted); }
+    .footer-link { font-size: 11px; color: var(--muted); text-decoration: none; }
+    .footer-link:hover { color: var(--text); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 600px) {
+      .preview-wrap { grid-template-columns: 1fr; }
+      h1 { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+<div class="site">
+  <nav>
+    <a class="nav-logo" href="index.html">Prime Today</a>
+    <a class="nav-back" href="index.html">← back to site</a>
+  </nav>
+
+  <div class="hero">
+    <div class="eyebrow">embeddable widget</div>
+    <h1>Add primes<br>to your site</h1>
+    <p class="subtitle">A self-contained widget that tells your visitors whether today is a prime number. No dependencies, no API keys, no tracking. Just copy and paste.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PREVIEW -->
+  <div class="section">
+    <div class="section-title">Preview</div>
+    <div class="size-btns">
+      <button class="size-btn active" onclick="setSize(240, 220, this)">compact</button>
+      <button class="size-btn" onclick="setSize(300, 260, this)">medium</button>
+      <button class="size-btn" onclick="setSize(360, 300, this)">large</button>
+    </div>
+    <div class="preview-wrap">
+      <div class="widget-frame" id="widget-frame">
+        <iframe src="widget.html" scrolling="no" title="Prime Today Widget"></iframe>
+      </div>
+      <div class="preview-info">
+        <div class="info-block">
+          <div class="info-label">updates</div>
+          <div class="info-val">automatically every day — no configuration needed</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">shows</div>
+          <div class="info-val">today's answer · date · day of year · nearest prime · prime gap</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">size</div>
+          <div class="info-val" id="size-label">240 × 220 px — scales to any container</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">dependencies</div>
+          <div class="info-val" style="color:var(--accent2);">none — pure HTML + JS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- CODE -->
+  <div class="section">
+    <div class="section-title">Embed code</div>
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-label">HTML</span>
+        <button class="copy-btn" id="copy-btn" onclick="copyCode()">copy</button>
+      </div>
+      <pre id="code-block"><span class="hl">&lt;iframe</span>
+  <span class="hl2">src</span>="<span id="src-url">https://yourusername.github.io/prime-today/widget.html</span>"
+  <span class="hl2">width</span>="<span id="w-attr">240</span>"
+  <span class="hl2">height</span>="<span id="h-attr">220</span>"
+  <span class="hl2">frameborder</span>="0"
+  <span class="hl2">scrolling</span>="no"
+  <span class="hl2">title</span>="Prime Today Widget"
+  <span class="hl2">style</span>="border-radius:12px;overflow:hidden;"
+<span class="hl">&gt;&lt;/iframe&gt;</span></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- NOTES -->
+  <div class="section">
+    <div class="section-title">Notes</div>
+    <div class="notes">
+      <div class="note-row">
+        <div class="note-num">01</div>
+        <div class="note-text">Replace <code style="color:var(--accent)">yourusername</code> in the src URL with your actual GitHub username before sharing the embed code.</div>
+      </div>
+      <div class="note-row">
+        <div class="note-num">02</div>
+        <div class="note-text">The widget uses the visitor's local date - so users in different timezones may see different answers around midnight. This is intentional.</div>
+      </div>
+      <div class="note-row">
+        <div class="note-num">03</div>
+        <div class="note-text">The widget loads the DM Mono and DM Serif Display fonts from Google Fonts. If your site already loads them, there's no extra cost.</div>
+      </div>
+      <div class="note-row">
+        <div class="note-num">04</div>
+        <div class="note-text">You can resize freely - the widget is responsive within its container. Minimum recommended size is 200 × 180 px.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">Prime Today · built with curiosity</div>
+    <a class="footer-link" href="https://narrativa33giri.substack.com/" target="_blank" rel="noopener">Narrativa a 33 Giri →</a>
+  </footer>
+</div>
+
+<script>
+  let currentW = 240, currentH = 220;
+
+  function setSize(w, h, btn) {
+    currentW = w; currentH = h;
+    document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const frame = document.getElementById('widget-frame');
+    frame.style.width = w + 'px';
+    frame.style.height = h + 'px';
+    document.getElementById('w-attr').textContent = w;
+    document.getElementById('h-attr').textContent = h;
+    document.getElementById('size-label').textContent = w + ' × ' + h + ' px — scales to any container';
+  }
+
+  function copyCode() {
+    const url = document.getElementById('src-url').textContent;
+    const code = `<iframe\n  src="${url}"\n  width="${currentW}"\n  height="${currentH}"\n  frameborder="0"\n  scrolling="no"\n  title="Prime Today Widget"\n  style="border-radius:12px;overflow:hidden;"\n></iframe>`;
+    navigator.clipboard.writeText(code).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'copied ✓';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
