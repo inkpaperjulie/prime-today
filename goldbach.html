@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Congettura di Goldbach</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #0f0a14;
+  --surface:  #171020;
+  --surface2: #1f1830;
+  --border:   #2e2448;
+  --text:     #ede0ff;
+  --muted:    #584878;
+  --accent:   #c084fc;
+  --gold:     #f5c842;
+  --sym:      #6af7c4;
+  --dot:      rgba(192,132,252,0.7);
+  --dot-sym:  #6af7c4;
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 52px; gap: 20px;
+}
+
+header { text-align: center; }
+header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.02em; }
+header p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--muted);
+  margin-top: 5px; letter-spacing: 0.06em;
+}
+
+.layout {
+  display: flex; gap: 18px; width: 100%;
+  max-width: 960px; align-items: flex-start;
+  flex-wrap: wrap; justify-content: center;
+}
+
+/* ---- LEFT: explorer ---- */
+.explorer {
+  min-width: 260px; max-width: 300px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 14px;
+}
+.card-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--muted); margin-bottom: 12px;
+}
+
+/* number input */
+.n-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+}
+.n-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+}
+.n-input {
+  font-family: 'JetBrains Mono', monospace; font-size: 1.1rem;
+  font-weight: 500; background: var(--surface2);
+  border: 1px solid var(--border); color: var(--text);
+  border-radius: 3px; padding: 6px 10px; width: 100px;
+  text-align: center; outline: none;
+  transition: border-color 0.15s;
+}
+.n-input:focus { border-color: var(--accent); }
+
+.btn-find {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+  padding: 7px 14px; background: var(--accent); color: #0f0a14;
+  font-weight: 700; border: none; border-radius: 3px; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  transition: filter 0.12s;
+}
+.btn-find:hover { filter: brightness(1.1); }
+
+/* pairs display */
+.pairs-count {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  color: var(--muted); margin-bottom: 8px;
+}
+.pairs-count span { color: var(--accent); font-weight: 500; }
+
+.pair-list {
+  display: flex; flex-direction: column; gap: 3px;
+  max-height: 280px; overflow-y: auto;
+}
+.pair-row {
+  display: flex; align-items: center; gap: 6px;
+  padding: 5px 8px; border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.76rem;
+  border: 1px solid transparent;
+  transition: background 0.1s;
+}
+.pair-row.sym {
+  background: rgba(106,247,196,0.08);
+  border-color: rgba(106,247,196,0.3);
+}
+.pair-p { color: var(--accent); font-weight: 500; min-width: 32px; }
+.pair-plus { color: var(--muted); }
+.pair-q { color: var(--accent); font-weight: 500; min-width: 32px; }
+.pair-sym-tag {
+  font-size: 0.58rem; color: var(--sym);
+  margin-left: auto; text-transform: uppercase; letter-spacing: 0.06em;
+}
+
+/* number line */
+.numline-wrap { margin-top: 10px; }
+.numline-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+  color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 6px;
+}
+#numlineCanvas { display: block; width: 100%; border-radius: 3px; }
+
+/* stats */
+.stat-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 7px;
+}
+.stat-label { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.stat-val   { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; font-weight: 500; color: var(--accent); }
+
+/* ---- RIGHT: comet ---- */
+.comet-col {
+  flex: 1; min-width: 320px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.comet-controls {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 10px 14px; flex-wrap: wrap;
+}
+.comet-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
+}
+#cometSlider { flex: 1; min-width: 80px; accent-color: var(--accent); cursor: pointer; }
+.comet-val {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+  font-weight: 500; color: var(--accent); min-width: 40px;
+}
+.btn-comet {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+  padding: 6px 12px; background: var(--surface2);
+  border: 1px solid var(--border); color: var(--muted);
+  border-radius: 3px; cursor: pointer;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  transition: color 0.12s, border-color 0.12s;
+}
+.btn-comet:hover { color: var(--accent); border-color: var(--accent); }
+
+.comet-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+}
+#cometCanvas { display: block; width: 100%; }
+
+.comet-note {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+  color: var(--muted); line-height: 1.65; padding: 10px 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; border-left: 2px solid var(--accent);
+}
+.comet-note .hl { color: var(--text); }
+
+@media (max-width: 640px) {
+  .explorer { max-width: 100%; min-width: 0; width: 100%; }
+  .comet-col { min-width: 0; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Congettura di Goldbach</h1>
+  <p>ogni numero pari &gt; 2 è somma di due numeri primi · non ancora dimostrata</p>
+</header>
+
+<div class="layout">
+
+  <!-- EXPLORER -->
+  <div class="explorer">
+    <div class="card">
+      <div class="card-title">Esplora un numero pari</div>
+      <div class="n-row">
+        <span class="n-label">n =</span>
+        <input type="number" class="n-input" id="nInput" value="28" min="4" max="100000" step="2">
+        <button class="btn-find" id="btnFind">Trova</button>
+      </div>
+      <div class="pairs-count" id="pairsCount">—</div>
+      <div class="pair-list" id="pairList"></div>
+      <div class="numline-wrap">
+        <div class="numline-label">Retta dei numeri — coppie visualizzate</div>
+        <canvas id="numlineCanvas" height="56"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Statistiche</div>
+      <div class="stat-row"><span class="stat-label">Coppie trovate</span><span class="stat-val" id="stCoppie">—</span></div>
+      <div class="stat-row"><span class="stat-label">Coppia più simmetrica</span><span class="stat-val" id="stSym" style="font-size:0.8rem">—</span></div>
+      <div class="stat-row"><span class="stat-label">Primo più piccolo usato</span><span class="stat-val" id="stMin">—</span></div>
+    </div>
+  </div>
+
+  <!-- COMETA -->
+  <div class="comet-col">
+    <div class="comet-controls">
+      <span class="comet-label">Cometa fino a N =</span>
+      <input type="range" id="cometSlider" min="20" max="1000" value="200" step="10">
+      <span class="comet-val" id="cometVal">200</span>
+      <button class="btn-comet" id="btnComet">Disegna</button>
+    </div>
+
+    <div class="comet-wrap">
+      <canvas id="cometCanvas" height="380"></canvas>
+    </div>
+
+    <div class="comet-note">
+      <span class="hl">La cometa di Goldbach:</span> ogni punto è un numero pari n sull'asse x. L'altezza è il numero di coppie (p, q) con p+q=n e p≤q. La forma a "cometa" — che cresce irregolarmente verso destra — è uno dei pattern più belli della teoria dei numeri. Nessuno sa perché non tocchi mai lo zero.
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---- sieve ----
+function buildSieve(max) {
+  const s = new Uint8Array(max + 1).fill(1);
+  s[0] = s[1] = 0;
+  for (let i = 2; i * i <= max; i++) {
+    if (s[i]) for (let j = i*i; j <= max; j += i) s[j] = 0;
+  }
+  return s;
+}
+
+let sieve = buildSieve(100000);
+
+function goldbachPairs(n, s) {
+  const pairs = [];
+  for (let p = 2; p <= n / 2; p++) {
+    if (s[p] && s[n - p]) pairs.push([p, n - p]);
+  }
+  return pairs;
+}
+
+// ---- explorer ----
+const nlCanvas = document.getElementById('numlineCanvas');
+const nlCtx = nlCanvas.getContext('2d');
+
+function explore(n) {
+  n = Math.max(4, Math.min(100000, Math.floor(n / 2) * 2)); // force even
+  document.getElementById('nInput').value = n;
+
+  if (n > 100000) { sieve = buildSieve(n); }
+
+  const pairs = goldbachPairs(n, sieve);
+  const count = pairs.length;
+
+  // most symmetric pair: |p - n/2| minimized → p closest to n/2
+  let symPair = null, minDist = Infinity;
+  pairs.forEach(([p, q]) => {
+    const d = Math.abs(p - n / 2);
+    if (d < minDist) { minDist = d; symPair = [p, q]; }
+  });
+
+  // update count
+  document.getElementById('pairsCount').innerHTML =
+    `<span>${count}</span> ${count === 1 ? 'coppia' : 'coppie'} per n = ${n}`;
+
+  // update list
+  const list = document.getElementById('pairList');
+  list.innerHTML = '';
+  pairs.forEach(([p, q]) => {
+    const isSym = symPair && p === symPair[0];
+    const row = document.createElement('div');
+    row.className = 'pair-row' + (isSym ? ' sym' : '');
+    row.innerHTML = `
+      <span class="pair-p">${p}</span>
+      <span class="pair-plus">+</span>
+      <span class="pair-q">${q}</span>
+      ${isSym ? '<span class="pair-sym-tag">★ sim.</span>' : ''}
+    `;
+    list.appendChild(row);
+  });
+
+  // stats
+  document.getElementById('stCoppie').textContent = count;
+  document.getElementById('stSym').textContent = symPair ? `${symPair[0]} + ${symPair[1]}` : '—';
+  document.getElementById('stMin').textContent = pairs.length ? pairs[0][0] : '—';
+
+  // number line
+  drawNumline(n, pairs, symPair);
+}
+
+function drawNumline(n, pairs, symPair) {
+  const W = nlCanvas.offsetWidth || 260;
+  nlCanvas.width = W;
+  nlCtx.clearRect(0, 0, W, 56);
+  nlCtx.fillStyle = '#17102000';
+
+  const PAD = 12;
+  const y = 28;
+  const toX = v => PAD + (v / n) * (W - PAD * 2);
+
+  // axis
+  nlCtx.strokeStyle = '#2e2448'; nlCtx.lineWidth = 1;
+  nlCtx.beginPath(); nlCtx.moveTo(PAD, y); nlCtx.lineTo(W - PAD, y); nlCtx.stroke();
+
+  // tick at 0 and n
+  [0, n].forEach(v => {
+    nlCtx.strokeStyle = '#3e3460'; nlCtx.lineWidth = 1;
+    nlCtx.beginPath(); nlCtx.moveTo(toX(v), y - 5); nlCtx.lineTo(toX(v), y + 5); nlCtx.stroke();
+    nlCtx.fillStyle = '#584878'; nlCtx.font = '9px JetBrains Mono, monospace';
+    nlCtx.textAlign = 'center'; nlCtx.fillText(v, toX(v), y + 16);
+  });
+
+  // tick at n/2
+  nlCtx.strokeStyle = '#584878'; nlCtx.setLineDash([3, 3]);
+  nlCtx.beginPath(); nlCtx.moveTo(toX(n/2), y - 8); nlCtx.lineTo(toX(n/2), y + 8); nlCtx.stroke();
+  nlCtx.setLineDash([]);
+  nlCtx.fillStyle = '#584878'; nlCtx.font = '8px JetBrains Mono, monospace';
+  nlCtx.textAlign = 'center'; nlCtx.fillText(n/2, toX(n/2), y - 12);
+
+  // arcs for each pair
+  pairs.forEach(([p, q]) => {
+    const isSym = symPair && p === symPair[0];
+    const x1 = toX(p), x2 = toX(q);
+    const cx = (x1 + x2) / 2;
+    const radius = (x2 - x1) / 2;
+    nlCtx.strokeStyle = isSym ? 'rgba(106,247,196,0.8)' : 'rgba(192,132,252,0.25)';
+    nlCtx.lineWidth = isSym ? 1.5 : 1;
+    nlCtx.beginPath();
+    nlCtx.arc(cx, y, radius, Math.PI, 0);
+    nlCtx.stroke();
+
+    // dots at p and q
+    [p, q].forEach(v => {
+      nlCtx.beginPath(); nlCtx.arc(toX(v), y, isSym ? 3.5 : 2.5, 0, Math.PI * 2);
+      nlCtx.fillStyle = isSym ? '#6af7c4' : 'rgba(192,132,252,0.6)';
+      nlCtx.fill();
+    });
+  });
+}
+
+// ---- comet ----
+const cometCanvas = document.getElementById('cometCanvas');
+const cometCtx = cometCanvas.getContext('2d');
+let cometSieve = sieve;
+
+function drawComet(maxN) {
+  const W = cometCanvas.offsetWidth || 560;
+  cometCanvas.width = W;
+  const H = cometCanvas.height;
+  cometCtx.clearRect(0, 0, W, H);
+  cometCtx.fillStyle = '#17102080';
+  cometCtx.fillRect(0, 0, W, H);
+
+  if (maxN > 1000) cometSieve = buildSieve(maxN);
+  else cometSieve = sieve;
+
+  const PAD_L = 40, PAD_R = 16, PAD_T = 20, PAD_B = 36;
+  const gW = W - PAD_L - PAD_R;
+  const gH = H - PAD_T - PAD_B;
+
+  // collect data
+  const data = [];
+  let maxCount = 0;
+  for (let n = 4; n <= maxN; n += 2) {
+    const c = goldbachPairs(n, cometSieve).length;
+    data.push({ n, c });
+    if (c > maxCount) maxCount = c;
+  }
+
+  const toGx = n => PAD_L + ((n - 4) / (maxN - 4)) * gW;
+  const toGy = c => H - PAD_B - (c / maxCount) * gH;
+
+  // grid
+  cometCtx.strokeStyle = '#1f1830'; cometCtx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const gy = H - PAD_B - (i / 4) * gH;
+    cometCtx.beginPath(); cometCtx.moveTo(PAD_L, gy); cometCtx.lineTo(W - PAD_R, gy); cometCtx.stroke();
+    const label = Math.round((i / 4) * maxCount);
+    cometCtx.fillStyle = '#584878'; cometCtx.font = '9px JetBrains Mono,monospace';
+    cometCtx.textAlign = 'right'; cometCtx.fillText(label, PAD_L - 4, gy + 3);
+  }
+
+  // axes
+  cometCtx.strokeStyle = '#3e3460'; cometCtx.lineWidth = 1.5;
+  cometCtx.beginPath(); cometCtx.moveTo(PAD_L, PAD_T); cometCtx.lineTo(PAD_L, H - PAD_B); cometCtx.stroke();
+  cometCtx.beginPath(); cometCtx.moveTo(PAD_L, H - PAD_B); cometCtx.lineTo(W - PAD_R, H - PAD_B); cometCtx.stroke();
+
+  // axis labels
+  cometCtx.fillStyle = '#584878'; cometCtx.font = '9px JetBrains Mono,monospace';
+  cometCtx.textAlign = 'center';
+  cometCtx.fillText('n (numeri pari)', PAD_L + gW / 2, H - 4);
+  cometCtx.save(); cometCtx.translate(10, PAD_T + gH / 2); cometCtx.rotate(-Math.PI / 2);
+  cometCtx.fillText('coppie', 0, 0); cometCtx.restore();
+
+  // x ticks
+  const step = maxN <= 100 ? 10 : maxN <= 200 ? 20 : maxN <= 500 ? 50 : 100;
+  for (let n = step; n <= maxN; n += step) {
+    const gx = toGx(n);
+    cometCtx.strokeStyle = '#2e2448'; cometCtx.lineWidth = 1;
+    cometCtx.beginPath(); cometCtx.moveTo(gx, H - PAD_B); cometCtx.lineTo(gx, H - PAD_B + 4); cometCtx.stroke();
+    cometCtx.fillStyle = '#584878'; cometCtx.font = '9px JetBrains Mono,monospace';
+    cometCtx.textAlign = 'center'; cometCtx.fillText(n, gx, H - PAD_B + 14);
+  }
+
+  // dots
+  data.forEach(({ n, c }) => {
+    const x = toGx(n), y = toGy(c);
+    cometCtx.beginPath(); cometCtx.arc(x, y, 2, 0, Math.PI * 2);
+    // color by count: low = dim violet, high = bright
+    const t = c / maxCount;
+    cometCtx.fillStyle = `rgba(${Math.round(192 + 60*t)}, ${Math.round(132 - 60*t)}, ${Math.round(252 - 80*t)}, ${0.4 + 0.6*t})`;
+    cometCtx.fill();
+  });
+
+  // highlight current n if in range
+  const curN = parseInt(document.getElementById('nInput').value);
+  if (curN >= 4 && curN <= maxN) {
+    const curData = data.find(d => d.n === curN);
+    if (curData) {
+      const x = toGx(curData.n), y = toGy(curData.c);
+      cometCtx.beginPath(); cometCtx.arc(x, y, 5, 0, Math.PI * 2);
+      cometCtx.fillStyle = '#6af7c4'; cometCtx.fill();
+      cometCtx.strokeStyle = '#0f0a14'; cometCtx.lineWidth = 1.5; cometCtx.stroke();
+      cometCtx.fillStyle = '#6af7c4'; cometCtx.font = 'bold 10px JetBrains Mono,monospace';
+      cometCtx.textAlign = x > W - 80 ? 'right' : 'left';
+      cometCtx.fillText(`n=${curN}: ${curData.c}`, x + (x > W - 80 ? -8 : 8), y - 8);
+    }
+  }
+}
+
+// ---- events ----
+document.getElementById('btnFind').addEventListener('click', () => {
+  const n = parseInt(document.getElementById('nInput').value);
+  explore(n % 2 === 0 ? n : n - 1);
+  const maxN = parseInt(document.getElementById('cometSlider').value);
+  drawComet(maxN);
+});
+
+document.getElementById('nInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnFind').click();
+});
+
+document.getElementById('cometSlider').addEventListener('input', e => {
+  document.getElementById('cometVal').textContent = e.target.value;
+});
+
+document.getElementById('btnComet').addEventListener('click', () => {
+  const maxN = parseInt(document.getElementById('cometSlider').value);
+  drawComet(maxN);
+});
+
+// hover on comet: show n and count
+cometCanvas.addEventListener('mousemove', e => {
+  const rect = cometCanvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (cometCanvas.width / rect.width);
+  const maxN = parseInt(document.getElementById('cometSlider').value);
+  const PAD_L = 40, PAD_R = 16;
+  const gW = cometCanvas.width - PAD_L - PAD_R;
+  const n = Math.round(4 + ((mx - PAD_L) / gW) * (maxN - 4));
+  const nEven = Math.floor(n / 2) * 2;
+  if (nEven >= 4 && nEven <= maxN) {
+    cometCanvas.title = `n = ${nEven}`;
+  }
+});
+
+function resizeComet() {
+  const W = cometCanvas.parentElement.clientWidth;
+  cometCanvas.width = W;
+  const maxN = parseInt(document.getElementById('cometSlider').value);
+  drawComet(maxN);
+}
+
+function resizeNumline() {
+  const W = nlCanvas.parentElement.clientWidth;
+  nlCanvas.width = W;
+}
+
+window.addEventListener('resize', () => { resizeComet(); resizeNumline(); });
+
+// ---- init ----
+resizeComet();
+explore(28);
+drawComet(200);
+</script>
+</body>
+</html>

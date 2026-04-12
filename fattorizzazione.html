@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fattorizzazione Interattiva</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:       #0f1210;
+  --surface:  #161a15;
+  --surface2: #1d231c;
+  --border:   #2a332a;
+  --text:     #dff5e0;
+  --muted:    #4a6048;
+  --prime:    #6af7a0;
+  --divisor:  #f7c46a;
+  --remain:   #7cbbff;
+  --bad:      #f87171;
+  --neutral:  #2a332a;
+}
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 52px; gap: 18px;
+}
+
+header { text-align: center; }
+header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.02em; }
+header p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--muted);
+  margin-top: 5px; letter-spacing: 0.06em;
+}
+
+/* input row */
+.input-row {
+  display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap; justify-content: center;
+  width: 100%; max-width: 860px;
+}
+
+.num-input {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.4rem; font-weight: 500;
+  background: var(--surface); border: 1px solid var(--border);
+  color: var(--text); border-radius: 4px;
+  padding: 10px 16px; width: 160px; text-align: center;
+  outline: none; transition: border-color 0.15s;
+}
+.num-input:focus { border-color: var(--prime); }
+
+.speed-btns {
+  display: flex; gap: 0;
+  border: 1px solid var(--border); border-radius: 4px; overflow: hidden;
+}
+.speed-btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+  padding: 7px 11px; background: var(--surface);
+  border: none; color: var(--muted); cursor: pointer;
+  letter-spacing: 0.04em; transition: background 0.12s, color 0.12s;
+}
+.speed-btn.active { background: var(--surface2); color: var(--text); }
+.speed-btn:hover:not(.active) { color: var(--text); }
+
+.action-btns { display: flex; gap: 8px; }
+.btn {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+  padding: 8px 16px; border-radius: 3px; border: 1px solid var(--border);
+  cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+.btn-go    { background: var(--prime); color: #0f1210; border-color: var(--prime); font-weight: 700; }
+.btn-go:hover { filter: brightness(1.1); }
+.btn-step  { background: var(--surface); color: var(--divisor); border-color: var(--divisor); }
+.btn-step:hover { background: var(--surface2); }
+.btn-reset { background: var(--surface); color: var(--muted); border-color: var(--border); }
+.btn-reset:hover { color: var(--text); border-color: var(--muted); }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* main layout */
+.main {
+  display: flex; gap: 16px; width: 100%; max-width: 860px;
+  align-items: flex-start; flex-wrap: wrap; justify-content: center;
+}
+
+/* left: steps */
+.steps-col {
+  display: flex; flex-direction: column; gap: 10px;
+  min-width: 240px; max-width: 280px; flex-shrink: 0;
+}
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 14px;
+}
+.card-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.58rem;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+/* step log */
+.step-log {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 320px; overflow-y: auto;
+}
+.step-row {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  padding: 5px 8px; border-radius: 3px;
+  border-left: 2px solid transparent;
+  color: var(--muted); line-height: 1.5;
+  transition: opacity 0.2s;
+}
+.step-row.found   { border-color: var(--prime);   color: var(--text); background: rgba(106,247,160,0.06); }
+.step-row.trying  { border-color: var(--divisor);  color: var(--text); background: rgba(247,196,106,0.08); }
+.step-row.no      { border-color: var(--bad);      color: var(--muted); }
+.step-row.done-row{ border-color: var(--prime);    color: var(--prime); background: rgba(106,247,160,0.1); font-weight: 500; }
+
+/* status */
+.status-msg {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+  line-height: 1.7; color: var(--text); min-height: 48px;
+}
+.hl-d { color: var(--divisor); font-weight: 500; }
+.hl-r { color: var(--remain);  font-weight: 500; }
+.hl-p { color: var(--prime);   font-weight: 500; }
+.hl-n { color: var(--bad);     font-weight: 500; }
+
+/* result */
+.result-expr {
+  font-family: 'JetBrains Mono', monospace; font-size: 1rem;
+  color: var(--prime); line-height: 1.8; word-break: break-all;
+}
+.badge {
+  display: inline-block; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem; padding: 2px 8px; border-radius: 2px;
+  text-transform: uppercase; letter-spacing: 0.08em; margin-top: 6px;
+}
+.badge-prime { background: rgba(106,247,160,0.15); color: var(--prime); }
+.badge-comp  { background: rgba(124,187,255,0.12); color: var(--remain); }
+
+/* right: tree canvas */
+.tree-col { flex: 1; min-width: 300px; }
+.tree-wrap {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+}
+#treeCanvas { display: block; width: 100%; }
+
+/* progress */
+.prog-wrap {
+  height: 3px; background: var(--surface2);
+  border-radius: 2px; margin-top: 8px; overflow: hidden;
+}
+.prog-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--divisor), var(--prime));
+  border-radius: 2px; transition: width 0.3s;
+}
+
+@media (max-width: 620px) {
+  .steps-col { max-width: 100%; min-width: 0; width: 100%; }
+  .tree-col  { min-width: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Fattorizzazione in Primi</h1>
+  <p>trial division · ogni numero si scompone in fattori primi in modo unico</p>
+</header>
+
+<div class="input-row">
+  <input type="number" class="num-input" id="numInput" value="360" min="2" max="999999" placeholder="n">
+
+  <div class="speed-btns">
+    <button class="speed-btn" data-ms="800">lenta</button>
+    <button class="speed-btn active" data-ms="220">normale</button>
+    <button class="speed-btn" data-ms="60">veloce</button>
+    <button class="speed-btn" data-ms="5">max</button>
+  </div>
+
+  <div class="action-btns">
+    <button class="btn btn-go"   id="btnGo">▶ avvia</button>
+    <button class="btn btn-step" id="btnStep">passo</button>
+    <button class="btn btn-reset" id="btnReset">reset</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="steps-col">
+    <div class="card">
+      <div class="card-title">Stato</div>
+      <div class="status-msg" id="statusMsg">Inserisci un numero e premi ▶.</div>
+      <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Passaggi</div>
+      <div class="step-log" id="stepLog"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Risultato</div>
+      <div class="result-expr" id="resultExpr">—</div>
+    </div>
+  </div>
+
+  <div class="tree-col">
+    <div class="card-title" style="padding:0 0 6px 2px">Albero di fattorizzazione</div>
+    <div class="tree-wrap">
+      <canvas id="treeCanvas" width="520" height="420"></canvas>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ---- state ----
+let N = 360;
+let stepMs = 220;
+let phase = 'idle';  // idle | running | done
+let timer = null;
+
+// algorithm state
+let remaining = 0;
+let divisor = 2;
+let factors = [];       // [{p, exp}]
+let currentFactors = []; // raw list as found
+let steps = [];         // log entries
+
+// tree nodes: {id, value, parentId, isLeaf, isPrime, x, y}
+let treeNodes = [];
+let treeEdges = [];
+let nodeId = 0;
+
+// ---- helpers ----
+function getN() {
+  const v = parseInt(document.getElementById('numInput').value);
+  return (isNaN(v) || v < 2) ? 2 : Math.min(v, 999999);
+}
+
+function resetAll() {
+  clearInterval(timer); timer = null;
+  N = getN();
+  remaining = N;
+  divisor = 2;
+  factors = [];
+  currentFactors = [];
+  steps = [];
+  treeNodes = [];
+  treeEdges = [];
+  nodeId = 0;
+  phase = 'idle';
+
+  document.getElementById('stepLog').innerHTML = '';
+  document.getElementById('statusMsg').textContent = 'Inserisci un numero e premi ▶.';
+  document.getElementById('resultExpr').textContent = '—';
+  document.getElementById('progBar').style.width = '0%';
+  document.getElementById('btnGo').textContent = '▶ avvia';
+  document.getElementById('btnGo').disabled = false;
+  document.getElementById('btnStep').disabled = false;
+
+  // init tree with root
+  addNode(N, null, false);
+  drawTree();
+}
+
+function addNode(value, parentId, isPrime) {
+  const id = nodeId++;
+  treeNodes.push({ id, value, parentId, isPrime, x: 0, y: 0 });
+  if (parentId !== null) treeEdges.push({ from: parentId, to: id });
+  return id;
+}
+
+// ---- one step of trial division ----
+// returns true if more steps remain
+function doStep() {
+  if (phase === 'idle') phase = 'running';
+  if (phase === 'done') return false;
+
+  if (remaining === 1) {
+    finish();
+    return false;
+  }
+
+  if (divisor * divisor > remaining) {
+    // remaining is prime
+    currentFactors.push(remaining);
+    logStep('found', `${remaining} è primo → fattore trovato`);
+    setStatus(`<span class="hl-p">${remaining}</span> è primo — aggiunto come fattore.`);
+
+    // tree: split last node
+    const lastNode = treeNodes[treeNodes.length - 1];
+    if (lastNode && !lastNode.isPrime) {
+      lastNode.isPrime = true;
+      lastNode.isLeaf = true;
+    }
+
+    updateProgress();
+    drawTree();
+    remaining = 1;
+    finish();
+    return false;
+  }
+
+  if (remaining % divisor === 0) {
+    currentFactors.push(divisor);
+    logStep('found', `${remaining} ÷ ${divisor} = ${remaining / divisor} ✓`);
+    setStatus(`<span class="hl-r">${remaining}</span> ÷ <span class="hl-d">${divisor}</span> = <span class="hl-r">${remaining / divisor}</span> — divisibile!`);
+
+    // update tree: find the current "remaining" node and split it
+    splitTreeNode(remaining, divisor, remaining / divisor);
+
+    remaining = remaining / divisor;
+    updateProgress();
+    updateResult();
+    drawTree();
+
+    // don't advance divisor — try same divisor again
+  } else {
+    logStep('no', `${remaining} ÷ ${divisor} → resto ${remaining % divisor}`);
+    setStatus(`<span class="hl-r">${remaining}</span> ÷ <span class="hl-d">${divisor}</span> → non divisibile`);
+    divisor++;
+  }
+
+  return true;
+}
+
+function splitTreeNode(n, factor, quotient) {
+  // find the most recent node with value n that isn't already split
+  let parentNode = null;
+  for (let i = treeNodes.length - 1; i >= 0; i--) {
+    if (treeNodes[i].value === n && !treeNodes[i].split) {
+      parentNode = treeNodes[i];
+      break;
+    }
+  }
+  if (!parentNode) return;
+  parentNode.split = true;
+
+  addNode(factor,   parentNode.id, true);   // prime factor (leaf)
+  addNode(quotient, parentNode.id, quotient === 1 ? true : false); // remaining
+}
+
+function finish() {
+  phase = 'done';
+  clearInterval(timer); timer = null;
+
+  // group factors
+  const freq = {};
+  currentFactors.forEach(f => { freq[f] = (freq[f] || 0) + 1; });
+  factors = Object.entries(freq).map(([p, e]) => ({ p: parseInt(p), e }));
+  factors.sort((a, b) => a.p - b.p);
+
+  updateResult();
+  document.getElementById('progBar').style.width = '100%';
+
+  const expr = formatResult();
+  const isPrime = factors.length === 1 && factors[0].e === 1;
+  logStep('done-row', isPrime ? `${N} è primo!` : `${N} = ${expr}`);
+  setStatus(isPrime
+    ? `<span class="hl-p">${N} è primo!</span>`
+    : `Completato: <span class="hl-p">${N} = ${expr}</span>`);
+
+  document.getElementById('btnGo').textContent = '▶ avvia';
+  document.getElementById('btnGo').disabled = true;
+  document.getElementById('btnStep').disabled = true;
+  drawTree();
+}
+
+function formatResult() {
+  return factors.map(({ p, e }) => e > 1 ? `${p}^${e}` : `${p}`).join(' × ');
+}
+
+function updateResult() {
+  if (currentFactors.length === 0) {
+    document.getElementById('resultExpr').textContent = '—';
+    return;
+  }
+  const freq = {};
+  currentFactors.forEach(f => { freq[f] = (freq[f] || 0) + 1; });
+  const parts = Object.entries(freq)
+    .sort(([a], [b]) => a - b)
+    .map(([p, e]) => e > 1 ? `${p}^${e}` : p);
+  const expr = parts.join(' × ') + (remaining > 1 && remaining !== N ? ` × ${remaining}…` : '');
+  const isPrime = currentFactors.length === 1 && remaining === 1;
+  const badge = phase === 'done'
+    ? (factors.length === 1 && factors[0].e === 1
+        ? `<br><span class="badge badge-prime">numero primo</span>`
+        : `<br><span class="badge badge-comp">numero composto</span>`)
+    : '';
+  document.getElementById('resultExpr').innerHTML = expr + badge;
+}
+
+function updateProgress() {
+  const prog = Math.min(98, (1 - Math.log(remaining) / Math.log(N)) * 100);
+  document.getElementById('progBar').style.width = prog + '%';
+}
+
+function setStatus(html) {
+  document.getElementById('statusMsg').innerHTML = html;
+}
+
+function logStep(cls, text) {
+  const log = document.getElementById('stepLog');
+  const row = document.createElement('div');
+  row.className = `step-row ${cls}`;
+  row.textContent = text;
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ---- tree drawing ----
+const canvas = document.getElementById('treeCanvas');
+const ctx = canvas.getContext('2d');
+
+function layoutTree() {
+  // BFS to assign levels and positions
+  if (treeNodes.length === 0) return;
+
+  const root = treeNodes.find(n => n.parentId === null);
+  if (!root) return;
+
+  // build children map
+  const children = {};
+  treeNodes.forEach(n => { children[n.id] = []; });
+  treeEdges.forEach(e => { if (children[e.from]) children[e.from].push(e.to); });
+
+  // assign depth
+  const depth = {};
+  const queue = [root.id];
+  depth[root.id] = 0;
+  while (queue.length) {
+    const id = queue.shift();
+    (children[id] || []).forEach(cid => {
+      depth[cid] = depth[id] + 1;
+      queue.push(cid);
+    });
+  }
+
+  const maxDepth = Math.max(...Object.values(depth));
+  const W = canvas.width, H = canvas.height;
+  const levelH = maxDepth > 0 ? Math.min(80, (H - 60) / maxDepth) : 80;
+
+  // assign x positions: leaf count determines spread
+  function countLeaves(id) {
+    const ch = children[id] || [];
+    if (ch.length === 0) return 1;
+    return ch.reduce((s, c) => s + countLeaves(c), 0);
+  }
+
+  function assignX(id, left, right) {
+    const node = treeNodes.find(n => n.id === id);
+    if (!node) return;
+    node.x = (left + right) / 2;
+    node.y = 30 + depth[id] * levelH;
+    const ch = children[id] || [];
+    if (ch.length === 0) return;
+    const total = countLeaves(id);
+    let cur = left;
+    ch.forEach(cid => {
+      const frac = countLeaves(cid) / total;
+      assignX(cid, cur, cur + frac * (right - left));
+      cur += frac * (right - left);
+    });
+  }
+
+  assignX(root.id, 20, W - 20);
+}
+
+function drawTree() {
+  layoutTree();
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#161a15';
+  ctx.fillRect(0, 0, W, H);
+
+  if (treeNodes.length === 0) return;
+
+  // draw edges
+  const nodeMap = {};
+  treeNodes.forEach(n => { nodeMap[n.id] = n; });
+
+  ctx.strokeStyle = '#2a4a2a';
+  ctx.lineWidth = 1.5;
+  treeEdges.forEach(e => {
+    const from = nodeMap[e.from], to = nodeMap[e.to];
+    if (!from || !to) return;
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.stroke();
+  });
+
+  // draw nodes
+  treeNodes.forEach(n => {
+    const r = n.value > 9999 ? 22 : n.value > 999 ? 20 : 18;
+    const isPrimeLeaf = n.isPrime && (children_map(n.id).length === 0);
+    const isRoot = n.parentId === null;
+
+    // circle
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
+
+    if (n.value === 1) {
+      ctx.fillStyle = '#1d231c';
+      ctx.strokeStyle = '#2a332a';
+    } else if (isPrimeLeaf || (n.isPrime && !n.split)) {
+      ctx.fillStyle = 'rgba(106,247,160,0.18)';
+      ctx.strokeStyle = '#6af7a0';
+    } else if (isRoot && !n.split) {
+      ctx.fillStyle = 'rgba(124,187,255,0.12)';
+      ctx.strokeStyle = '#7cbbff';
+    } else if (n.split) {
+      ctx.fillStyle = 'rgba(247,196,106,0.1)';
+      ctx.strokeStyle = '#f7c46a44';
+    } else {
+      ctx.fillStyle = 'rgba(124,187,255,0.12)';
+      ctx.strokeStyle = '#7cbbff';
+    }
+    ctx.lineWidth = isPrimeLeaf ? 1.5 : 1;
+    ctx.fill(); ctx.stroke();
+
+    // label
+    const label = n.value === 1 ? '1' : String(n.value);
+    const fontSize = label.length > 5 ? 8 : label.length > 4 ? 9 : label.length > 3 ? 10 : 11;
+    ctx.fillStyle = isPrimeLeaf ? '#6af7a0'
+                   : n.value === 1 ? '#2a332a'
+                   : n.split ? '#f7c46a'
+                   : '#7cbbff';
+    ctx.font = `${fontSize}px JetBrains Mono, monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, n.x, n.y);
+  });
+}
+
+function children_map(id) {
+  return treeEdges.filter(e => e.from === id).map(e => e.to);
+}
+
+// ---- resize canvas ----
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  const w = wrap.clientWidth;
+  canvas.width = w;
+  canvas.height = Math.max(300, Math.min(500, w * 0.75));
+  drawTree();
+}
+
+// ---- controls ----
+document.getElementById('btnGo').addEventListener('click', () => {
+  if (phase === 'done') return;
+  if (phase === 'idle') {
+    N = getN();
+    resetAll();
+    phase = 'running';
+  }
+  if (timer) {
+    clearInterval(timer); timer = null;
+    document.getElementById('btnGo').textContent = '▶ riprendi';
+  } else {
+    document.getElementById('btnGo').textContent = '⏸ pausa';
+    timer = setInterval(() => { if (!doStep()) clearInterval(timer); }, stepMs);
+  }
+});
+
+document.getElementById('btnStep').addEventListener('click', () => {
+  if (phase === 'done') return;
+  if (phase === 'idle') { N = getN(); resetAll(); phase = 'running'; }
+  if (timer) { clearInterval(timer); timer = null; document.getElementById('btnGo').textContent = '▶ riprendi'; }
+  doStep();
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  clearInterval(timer); timer = null;
+  resetAll();
+});
+
+document.getElementById('numInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { clearInterval(timer); timer = null; resetAll(); }
+});
+
+document.querySelectorAll('.speed-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    stepMs = parseInt(btn.dataset.ms);
+    if (timer) { clearInterval(timer); timer = setInterval(() => { if (!doStep()) clearInterval(timer); }, stepMs); }
+  });
+});
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+resetAll();
+</script>
+</body>
+</html>
