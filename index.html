@@ -179,6 +179,142 @@
     }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* PRIME OF THE DAY */
+    .potd {
+      padding: 32px 0 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+      animation: fadeUp 0.6s ease both;
+      animation-delay: 0.05s;
+    }
+    .potd-left {}
+    .potd-eyebrow {
+      font-size: 10px; letter-spacing: 0.18em; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .potd-number {
+      font-family: var(--serif); font-size: 64px; line-height: 1;
+      color: var(--accent); margin-bottom: 10px;
+    }
+    .potd-type {
+      font-size: 12px; color: var(--muted); margin-bottom: 16px;
+      letter-spacing: 0.04em;
+    }
+    .potd-desc {
+      font-size: 13px; color: rgba(232,227,213,0.65); line-height: 1.8;
+    }
+    .potd-right { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+    .potd-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 10px; padding: 3px 10px; border-radius: 4px;
+      letter-spacing: 0.08em; margin-bottom: 6px;
+    }
+    .potd-tag.mersenne { background: rgba(184,169,232,0.12); color: var(--accent); border: 0.5px solid rgba(184,169,232,0.25); }
+    .potd-tag.twin { background: rgba(126,200,164,0.12); color: var(--accent2); border: 0.5px solid rgba(126,200,164,0.25); }
+    .potd-tag.palindrome { background: rgba(247,196,106,0.1); color: #f7c46a; border: 0.5px solid rgba(247,196,106,0.25); }
+    .potd-tag.repunit { background: rgba(247,196,106,0.1); color: #f7c46a; border: 0.5px solid rgba(247,196,106,0.25); }
+    .potd-tag.regular { background: rgba(255,255,255,0.05); color: var(--muted); border: 0.5px solid var(--border); }
+    .potd-fact {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: 10px; padding: 14px 18px;
+    }
+    .potd-fact-label {
+      font-size: 10px; color: var(--muted); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 5px;
+    }
+    .potd-fact-val { font-size: 14px; color: var(--text); line-height: 1.5; }
+    .potd-fact-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    @media (max-width: 640px) {
+      .potd { grid-template-columns: 1fr; gap: 28px; }
+      .potd-number { font-size: 48px; }
+    }
+
+    /* SPIRAL GENERATOR */
+    .spiral-wrap { display: grid; grid-template-columns: auto 1fr; gap: 36px; align-items: start; }
+    .spiral-canvas-wrap { position: relative; }
+    #spiral-canvas { display: block; border-radius: 4px; cursor: crosshair; }
+    .spiral-controls { display: flex; flex-direction: column; gap: 14px; }
+    .spiral-seq-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+    .seq-btn {
+      background: transparent; border: 0.5px solid var(--border); border-radius: 6px;
+      padding: 5px 13px; font-family: var(--mono); font-size: 10px; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.06em; transition: all 0.2s;
+    }
+    .seq-btn:hover { border-color: var(--border2); color: var(--text); }
+    .seq-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(184,169,232,0.08); }
+    .spiral-info { display: flex; flex-direction: column; gap: 10px; }
+    .sp-stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+    .sp-stat-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+    .sp-stat-val { font-size: 16px; color: var(--text); }
+    .sp-stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .sp-note { font-size: 12px; color: var(--muted); line-height: 1.7; padding: 14px 16px; background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; }
+    @media (max-width: 640px) { .spiral-wrap { grid-template-columns: 1fr; } }
+
+    /* TIMELINE */
+    .timeline { position: relative; padding-left: 0; }
+    .timeline-spine {
+      position: absolute; left: 120px; top: 8px; bottom: 8px;
+      width: 0.5px; background: var(--border);
+    }
+    .tl-item {
+      display: grid; grid-template-columns: 120px 1fr;
+      gap: 0 32px; margin-bottom: 0; position: relative;
+    }
+    .tl-item:last-child .tl-body { border-bottom: none; }
+    .tl-year {
+      text-align: right; padding: 20px 0; font-size: 12px;
+      color: var(--muted); letter-spacing: 0.06em; padding-top: 22px;
+      line-height: 1;
+    }
+    .tl-year.highlight { color: var(--accent); }
+    .tl-body {
+      padding: 16px 0 24px 32px; border-bottom: 0.5px solid var(--border);
+      position: relative;
+    }
+    .tl-dot {
+      position: absolute; left: -5px; top: 22px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--bg); border: 0.5px solid var(--border2);
+    }
+    .tl-dot.major {
+      background: var(--accent); border-color: var(--accent);
+      width: 11px; height: 11px; left: -6px;
+      box-shadow: 0 0 0 3px rgba(184,169,232,0.15);
+    }
+    .tl-dot.record {
+      background: var(--accent2); border-color: var(--accent2);
+      width: 9px; height: 9px;
+    }
+    .tl-title { font-size: 14px; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+    .tl-desc { font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .tl-tag {
+      display: inline-block; margin-top: 8px; font-size: 10px;
+      padding: 2px 8px; border-radius: 3px; letter-spacing: 0.06em;
+    }
+    .tl-tag.theory { background: rgba(184,169,232,0.1); color: var(--accent); border: 0.5px solid rgba(184,169,232,0.2); }
+    .tl-tag.record { background: rgba(126,200,164,0.1); color: var(--accent2); border: 0.5px solid rgba(126,200,164,0.2); }
+    .tl-tag.algorithm { background: rgba(232,227,213,0.06); color: var(--muted); border: 0.5px solid var(--border); }
+    .tl-prime {
+      font-family: var(--serif); font-size: 13px; font-style: italic;
+      color: rgba(184,169,232,0.7); margin-top: 4px;
+    }
+    .tl-filter { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+    .tl-btn {
+      background: transparent; border: 0.5px solid var(--border); border-radius: 6px;
+      padding: 5px 14px; font-family: var(--mono); font-size: 10px; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.08em; transition: all 0.2s;
+    }
+    .tl-btn:hover { border-color: var(--border2); color: var(--text); }
+    .tl-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(184,169,232,0.07); }
+    .tl-item.hidden { display: none; }
+    @media (max-width: 640px) {
+      .timeline-spine { left: 72px; }
+      .tl-item { grid-template-columns: 72px 1fr; }
+      .tl-year { font-size: 10px; }
+    }
   </style>
 </head>
 <body>
@@ -191,7 +327,8 @@
       <a href="#oracle">oracle</a>
       <a href="#formula">formulas</a>
       <a href="#ulam">ulam spiral</a>
-      <a href="#discoveries">discoveries</a>
+      <a href="#timeline">timeline</a>
+      <a href="#spiral">spiral gen</a>
       <a href="#tools">tools</a>
     </div>
   </nav>
@@ -218,6 +355,38 @@
         <div class="fact-label">prime gap today</div>
         <div class="fact-val" id="prime-gap">—</div>
         <div class="fact-sub" id="gap-sub"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PRIME OF THE DAY -->
+  <div class="potd" id="potd">
+    <div class="potd-left">
+      <div class="potd-eyebrow">prime of the day</div>
+      <div class="potd-number" id="potd-number">—</div>
+      <div id="potd-tags"></div>
+      <div class="potd-desc" id="potd-desc"></div>
+    </div>
+    <div class="potd-right">
+      <div class="potd-fact">
+        <div class="potd-fact-label">index</div>
+        <div class="potd-fact-val" id="potd-index">—</div>
+        <div class="potd-fact-sub" id="potd-index-sub"></div>
+      </div>
+      <div class="potd-fact">
+        <div class="potd-fact-label">factorization</div>
+        <div class="potd-fact-val" id="potd-factor">—</div>
+      </div>
+      <div class="potd-fact">
+        <div class="potd-fact-label">digit sum</div>
+        <div class="potd-fact-val" id="potd-digitsum">—</div>
+        <div class="potd-fact-sub" id="potd-digitsum-sub"></div>
+      </div>
+      <div class="potd-fact">
+        <div class="potd-fact-label">neighbors</div>
+        <div class="potd-fact-val" id="potd-neighbors">—</div>
       </div>
     </div>
   </div>
@@ -342,14 +511,238 @@
 
   <div class="divider"></div>
 
-  <!-- DISCOVERIES -->
-  <div class="section" id="discoveries">
+  <!-- TIMELINE -->
+  <div class="section" id="timeline">
     <div class="section-header">
       <span class="section-num">04</span>
-      <span class="section-title">Recent discoveries</span>
+      <span class="section-title">Record timeline</span>
     </div>
-    <div class="discoveries-grid" id="discoveries-grid">
-      <div class="disc-loading">Loading latest research from Wikipedia...</div>
+    <div class="tl-filter">
+      <button class="tl-btn active" onclick="filterTL('all', this)">all</button>
+      <button class="tl-btn" onclick="filterTL('record', this)">records</button>
+      <button class="tl-btn" onclick="filterTL('theory', this)">theory</button>
+      <button class="tl-btn" onclick="filterTL('algorithm', this)">algorithms</button>
+    </div>
+    <div class="timeline">
+      <div class="timeline-spine"></div>
+
+      <div class="tl-item" data-tag="theory">
+        <div class="tl-year">~300 BCE</div>
+        <div class="tl-body">
+          <div class="tl-dot major"></div>
+          <div class="tl-title">Euclid proves primes are infinite</div>
+          <div class="tl-desc">In the Elements, Euclid shows that no finite list can contain all primes. The proof - two lines, still taught today - is one of the oldest logical arguments in mathematics.</div>
+          <span class="tl-tag theory">theory</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="record">
+        <div class="tl-year">~200 BCE</div>
+        <div class="tl-body">
+          <div class="tl-dot record"></div>
+          <div class="tl-title">Eratosthenes' Sieve</div>
+          <div class="tl-desc">The first systematic algorithm for finding primes. Eratosthenes described a method for sieving out composites that remains conceptually unchanged 2200 years later.</div>
+          <span class="tl-tag algorithm">algorithm</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="theory">
+        <div class="tl-year">1202</div>
+        <div class="tl-body">
+          <div class="tl-dot"></div>
+          <div class="tl-title">Fibonacci introduces his sequence</div>
+          <div class="tl-desc">Leonardo of Pisa's Liber Abaci introduces the sequence 1, 1, 2, 3, 5, 8, 13… Fibonacci primes - Fibonacci numbers that are also prime - remain an active research area today.</div>
+          <span class="tl-tag theory">theory</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="record">
+        <div class="tl-year">1536</div>
+        <div class="tl-body">
+          <div class="tl-dot record"></div>
+          <div class="tl-title">Largest known prime: 524,287</div>
+          <div class="tl-desc">Hudalrichus Regius verifies that 524,287 = 2¹⁹ − 1 is prime. The first recorded large prime found by direct verification, not just conjecture.</div>
+          <div class="tl-prime">2¹⁹ − 1 = 524,287</div>
+          <span class="tl-tag record">record</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="theory">
+        <div class="tl-year">1640</div>
+        <div class="tl-body">
+          <div class="tl-dot major"></div>
+          <div class="tl-title">Fermat's Little Theorem</div>
+          <div class="tl-desc">Fermat states in a letter that aᵖ ≡ a (mod p) for any prime p. He offers no proof. The theorem would later become the backbone of primality testing and public-key cryptography.</div>
+          <span class="tl-tag theory">theory</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="record">
+        <div class="tl-year">1644</div>
+        <div class="tl-body">
+          <div class="tl-dot"></div>
+          <div class="tl-title">Mersenne publishes his list</div>
+          <div class="tl-desc">Marin Mersenne claims primes of the form 2ᵖ − 1 for p = 2, 3, 5, 7, 13, 17, 19, 31, 67, 127, 257. He got five wrong - but the Mersenne prime hunt he started never stopped.</div>
+          <span class="tl-tag theory">theory</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="record">
+        <div class="tl-year">1772</div>
+        <div class="tl-body">
+          <div class="tl-dot record"></div>
+          <div class="tl-title">Euler finds the 8th Mersenne prime</div>
+          <div class="tl-desc">Leonhard Euler verifies by hand that 2³¹ − 1 = 2,147,483,647 is prime. He is 65 and nearly blind. The calculation takes months and remains one of the most impressive feats of mental arithmetic in history.</div>
+          <div class="tl-prime">2³¹ − 1 = 2,147,483,647</div>
+          <span class="tl-tag record">record</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="theory">
+        <div class="tl-year">1859</div>
+        <div class="tl-body">
+          <div class="tl-dot major"></div>
+          <div class="tl-title">Riemann's 8-page paper</div>
+          <div class="tl-desc">Bernhard Riemann submits "On the Number of Primes Less Than a Given Magnitude." In 8 pages he connects prime distribution to the zeros of a complex function and states a hypothesis still unproven 165 years later.</div>
+          <span class="tl-tag theory">theory</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="theory">
+        <div class="tl-year">1896</div>
+        <div class="tl-body">
+          <div class="tl-dot major"></div>
+          <div class="tl-title">Prime Number Theorem proved</div>
+          <div class="tl-desc">Hadamard and de la Vallée Poussin independently prove that π(x) ~ x/ln(x). Conjectured by Gauss at 15, proved 90 years later. One of the great achievements of 19th-century mathematics.</div>
+          <span class="tl-tag theory">theory</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="record">
+        <div class="tl-year">1952</div>
+        <div class="tl-body">
+          <div class="tl-dot record"></div>
+          <div class="tl-title">First computer-found prime</div>
+          <div class="tl-desc">Raphael Robinson uses the SWAC computer to find five Mersenne primes in a single evening - more than had been found in the previous century combined. The era of computational prime hunting begins.</div>
+          <div class="tl-prime">2²⁵²¹ − 1 (largest of the five)</div>
+          <span class="tl-tag record">record</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="algorithm">
+        <div class="tl-year">1976</div>
+        <div class="tl-body">
+          <div class="tl-dot"></div>
+          <div class="tl-title">Miller-Rabin primality test</div>
+          <div class="tl-desc">Gary Miller and Michael Rabin develop a fast probabilistic test for primality. It runs in milliseconds and underlies the generation of cryptographic keys. Every RSA prime today is tested this way.</div>
+          <span class="tl-tag algorithm">algorithm</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="algorithm">
+        <div class="tl-year">1977</div>
+        <div class="tl-body">
+          <div class="tl-dot major"></div>
+          <div class="tl-title">RSA encryption invented</div>
+          <div class="tl-desc">Rivest, Shamir and Adleman publish their public-key cryptosystem. Security rests entirely on the hardness of factoring large primes. Every HTTPS connection in the world now depends on prime numbers.</div>
+          <span class="tl-tag algorithm">algorithm</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="record">
+        <div class="tl-year">1996</div>
+        <div class="tl-body">
+          <div class="tl-dot record"></div>
+          <div class="tl-title">GIMPS founded</div>
+          <div class="tl-desc">George Woltman launches the Great Internet Mersenne Prime Search. For the first time, thousands of volunteers worldwide pool CPU cycles toward a single mathematical goal. It will find the 13 largest known primes in history.</div>
+          <span class="tl-tag record">record</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="theory">
+        <div class="tl-year">2002</div>
+        <div class="tl-body">
+          <div class="tl-dot"></div>
+          <div class="tl-title">AKS: primes in polynomial time</div>
+          <div class="tl-desc">Agrawal, Kayal and Saxena prove that primality can be determined deterministically in polynomial time. A theoretical landmark - though Miller-Rabin remains faster in practice.</div>
+          <span class="tl-tag algorithm">algorithm</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="theory">
+        <div class="tl-year">2013</div>
+        <div class="tl-body">
+          <div class="tl-dot major"></div>
+          <div class="tl-title">Zhang's bounded prime gaps</div>
+          <div class="tl-desc">Yitang Zhang, an unknown mathematician working at a Subway sandwich shop, proves that infinitely many prime pairs differ by at most 70 million. The first finite bound ever proven. Within a year, collaborative work reduced it to 246.</div>
+          <span class="tl-tag theory">theory</span>
+        </div>
+      </div>
+
+      <div class="tl-item" data-tag="record">
+        <div class="tl-year highlight">2024</div>
+        <div class="tl-body">
+          <div class="tl-dot major"></div>
+          <div class="tl-title">Largest known prime: 41+ million digits</div>
+          <div class="tl-desc">Luke Durant, a former NVIDIA engineer, uses a network of GPUs across 17 countries to find M136279841. It has 41,024,320 digits. If printed, it would fill roughly 25,000 pages. Verified by GIMPS in October 2024.</div>
+          <div class="tl-prime">2¹³⁶²⁷⁹⁸⁴¹ − 1</div>
+          <span class="tl-tag record">record</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SPIRAL GENERATOR -->
+  <div class="section" id="spiral">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title">Spiral generator</span>
+    </div>
+    <div class="spiral-seq-btns">
+      <button class="seq-btn active" onclick="setSeq('primes',this)">primes</button>
+      <button class="seq-btn" onclick="setSeq('fibonacci',this)">fibonacci</button>
+      <button class="seq-btn" onclick="setSeq('squares',this)">perfect squares</button>
+      <button class="seq-btn" onclick="setSeq('triangular',this)">triangular</button>
+      <button class="seq-btn" onclick="setSeq('lucky',this)">lucky numbers</button>
+      <button class="seq-btn" onclick="setSeq('twin',this)">twin primes</button>
+    </div>
+    <div class="spiral-wrap" style="margin-top:16px;">
+      <div>
+        <div class="spiral-canvas-wrap">
+          <canvas id="spiral-canvas" width="420" height="420"></canvas>
+          <div class="ulam-tooltip" id="spiral-tooltip">
+            <div class="tt-num" id="stt-num"></div>
+            <div class="tt-sub" id="stt-sub"></div>
+          </div>
+        </div>
+        <div style="margin-top:14px;">
+          <div class="ctrl-row">
+            <span class="ctrl-label">size</span>
+            <input type="range" id="spiral-size" min="11" max="71" step="2" value="41" oninput="drawSpiral()" />
+            <span class="ctrl-val" id="spiral-size-val">41×41</span>
+          </div>
+        </div>
+      </div>
+      <div class="spiral-info">
+        <div class="sp-stat">
+          <div class="sp-stat-label">sequence</div>
+          <div class="sp-stat-val" id="sp-seq-name">Primes</div>
+          <div class="sp-stat-sub" id="sp-seq-desc"></div>
+        </div>
+        <div class="sp-stat">
+          <div class="sp-stat-label">highlighted</div>
+          <div class="sp-stat-val" id="sp-count">—</div>
+          <div class="sp-stat-sub" id="sp-density">—</div>
+        </div>
+        <div class="sp-stat">
+          <div class="sp-stat-label">first values</div>
+          <div class="sp-stat-val" id="sp-first" style="font-size:12px;line-height:1.8;color:var(--muted);"></div>
+        </div>
+        <div class="sp-note" id="sp-note"></div>
+      </div>
     </div>
   </div>
 
@@ -358,7 +751,7 @@
   <!-- TOOLS -->
   <div class="section" id="tools">
     <div class="section-header">
-      <span class="section-num">05</span>
+      <span class="section-num">06</span>
       <span class="section-title">Tools & simulations</span>
     </div>
     <div class="tools-grid">
@@ -391,7 +784,13 @@
         <div class="tool-arrow">open tool →</div>
       </a>
 
-      <!-- PLACEHOLDER - remove or replace when you add more tools -->
+      <a class="tool-card" href="goldbach.html">
+        <div class="tool-tag">mathematics · visualization</div>
+        <div class="tool-title">Goldbach's Conjecture</div>
+        <div class="tool-desc">Every even number greater than 2 is the sum of two primes. Visualize Goldbach pairs interactively - still unproven after 280 years.</div>
+        <div class="tool-arrow">open tool →</div>
+      </a>
+
       <div class="tool-card placeholder">
         <div class="tool-tag">coming soon</div>
         <div class="tool-title" style="color:var(--muted);font-size:16px;">more tools</div>
@@ -402,8 +801,7 @@
   </div>
 
   <footer>
-    <div class="footer-text">Prime Today · built with curiosity</div>
-    <!-- replace with your actual Substack URL -->
+    <div class="footer-text">Prime Today · built with curiosity · <a href="embed.html" style="color:var(--muted);text-decoration:none;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">embed widget →</a></div>
     <a class="footer-link" href="https://narrativa33giri.substack.com/" target="_blank" rel="noopener">Narrativa a 33 Giri →</a>
   </footer>
 
@@ -459,6 +857,136 @@ function initHero() {
 initHero();
 
 /* ================================================================
+   PRIME OF THE DAY
+================================================================ */
+function nthPrime(n) {
+  let count = 0, num = 1;
+  while (count < n) { num++; if (isPrime(num)) count++; }
+  return num;
+}
+function primeIndex(p) {
+  let count = 0;
+  for (let i = 2; i <= p; i++) if (isPrime(i)) count++;
+  return count;
+}
+function isMersenne(n) {
+  if (n < 3) return false;
+  const m = Math.log2(n + 1);
+  return Math.abs(m - Math.round(m)) < 0.0001 && isPrime(Math.round(m));
+}
+function isPalindrome(n) { const s = String(n); return s === s.split('').reverse().join(''); }
+function isRepunit(n) { return /^1+$/.test(String(n)); }
+function isTwinPrime(n) { return isPrime(n) && (isPrime(n - 2) || isPrime(n + 2)); }
+function digitSum(n) { return String(n).split('').reduce((a, c) => a + parseInt(c), 0); }
+
+function pickPrimeOfDay() {
+  // Use day of year to seed selection - cycle through a rich pool
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const doy = Math.floor((now - start) / 86400000);
+
+  // Build a curated pool of interesting primes with metadata
+  const pool = [
+    { p: 2,       why: 'The only even prime. Every other even number is divisible by 2, making this the most unique prime of all.' },
+    { p: 3,       why: 'The first odd prime, and the only prime that is one less than a perfect square (4).' },
+    { p: 5,       why: 'The only prime ending in 5. Every other number ending in 5 is divisible by 5.' },
+    { p: 7,       why: 'The fourth prime. Ancient cultures considered 7 sacred - perhaps because it resists divisibility so stubbornly.' },
+    { p: 11,      why: 'The smallest repunit prime: 11 = "11" in base 10, all ones. Also a palindrome.' },
+    { p: 13,      why: 'Part of the twin prime pair (11, 13). Considered unlucky in many cultures, yet mathematically elegant.' },
+    { p: 17,      why: 'A Fermat prime: 17 = 2² + 1 with exponent a power of 2. Gauss proved a regular 17-gon is constructible with compass and straightedge.' },
+    { p: 19,      why: 'The 8th prime. Its digit sum is 10, and 1 + 9 = 10 → 1 + 0 = 1. A happy number.' },
+    { p: 23,      why: 'Part of the twin prime pair (23, 29)? No - but it pairs with (29) as cousin primes, differing by 6.' },
+    { p: 31,      why: 'A Mersenne prime: 31 = 2⁵ − 1. Also a palindrome in base 2 (11111).' },
+    { p: 37,      why: 'A permutable prime: all permutations of its digits (37, 73) are prime.' },
+    { p: 41,      why: "Famous for Euler's lucky number formula: n² + n + 41 produces primes for n = 0 to 39." },
+    { p: 43,      why: 'The 14th prime. 43 reversed is 34 = 2 × 17. Its digit sum 7 is also prime.' },
+    { p: 47,      why: 'A safe prime: (47 − 1)/2 = 23, which is also prime. Safe primes are important in cryptography.' },
+    { p: 53,      why: 'The 16th prime. 53 is a Sophie Germain prime: 2×53 + 1 = 107, which is also prime.' },
+    { p: 59,      why: 'Part of the twin prime pair (59, 61). The gap before it (from 53) is 6 - a cousin prime gap.' },
+    { p: 61,      why: 'A twin prime with 59. Also a centered hexagonal number - it can be arranged as a hexagon of dots.' },
+    { p: 67,      why: 'The 19th prime. Mersenne incorrectly claimed 2⁶⁷ − 1 was prime in 1644. It took until 1903 to disprove him.' },
+    { p: 71,      why: 'A permutable prime pair with 17. Its digit sum is 8, and 7 + 1 = 8 = 2³.' },
+    { p: 73,      why: "Sheldon Cooper's favorite number: the 21st prime, and 21 = 7 × 3. Also a palindrome in binary (1001001)." },
+    { p: 79,      why: 'A happy prime: repeatedly summing squares of digits eventually reaches 1. 7²+9² = 130 → 1+9 = 10 → 1.' },
+    { p: 83,      why: 'The 23rd prime. 83 cannot be expressed as the sum of fewer than three square numbers.' },
+    { p: 89,      why: 'A Fibonacci prime - 89 appears in the Fibonacci sequence. Its reciprocal 1/89 encodes the Fibonacci sequence in its decimal expansion.' },
+    { p: 97,      why: 'The largest two-digit prime, and the 25th prime overall. Its reversal 79 is also prime (emirp).' },
+    { p: 101,     why: 'The smallest palindromic prime. 101 reads the same forwards and backwards.' },
+    { p: 127,     why: 'A Mersenne prime: 127 = 2⁷ − 1. The last Mersenne prime Euler knew of, verified in 1772.' },
+    { p: 131,     why: 'A palindromic prime and a Sophie Germain prime: 2×131 + 1 = 263, also prime.' },
+    { p: 137,     why: 'The fine-structure constant in physics is approximately 1/137. Physicists call it a "magic number" of the universe.' },
+    { p: 149,     why: 'The 35th prime. Part of a prime quadruplet: (149, 151) is a twin prime pair.' },
+    { p: 151,     why: 'A palindromic prime and twin prime with 149. A rare combination.' },
+    { p: 157,     why: 'The 37th prime. Its digits sum to 13, which is prime, and 1+3 = 4 = 2².' },
+    { p: 163,     why: 'One of the Heegner numbers - special values connected to imaginary quadratic fields. Euler\'s formula n²−n+41 is linked to 163.' },
+    { p: 167,     why: 'A safe prime: (167−1)/2 = 83, also prime. Appears in cryptographic key generation.' },
+    { p: 173,     why: 'The 40th prime. 173 reversed is 371 = 7 × 53, not prime - but 173 itself is a balanced prime.' },
+    { p: 181,     why: 'A palindromic prime. 1+8+1 = 10, and 181 in binary is 10110101.' },
+    { p: 191,     why: 'A palindromic prime and a Sophie Germain prime: 2×191 + 1 = 383, also prime and palindromic.' },
+    { p: 193,     why: 'The 44th prime. Part of the prime constellation (191, 193) - a twin prime pair.' },
+    { p: 197,     why: 'A twin prime with 199. Both are prime, and 1+9+7 = 17, which is also prime.' },
+    { p: 199,     why: 'Twin prime with 197. The 46th prime - a prime index that is not itself prime.' },
+    { p: 211,     why: 'The 47th prime. 2+1+1 = 4. Its reversal 112 = 2⁴ × 7 is not prime, making 211 a one-way emirp.' },
+    { p: 223,     why: 'Part of the sexy prime triplet (211, 223, 227) - three primes each differing by 6.' },
+    { p: 227,     why: 'Completes the sexy prime triplet with 211 and 223. Sexy primes differ by 6 (from Latin "sex").' },
+    { p: 229,     why: 'The 50th prime. A milestone in the prime sequence - the golden jubilee of primes.' },
+    { p: 233,     why: 'A Fibonacci prime - 233 appears in the Fibonacci sequence between 144 and 377.' },
+    { p: 241,     why: 'A centered square prime - 241 dots can be arranged as a square with a dot in the center.' },
+    { p: 251,     why: 'The 54th prime. 2+5+1 = 8 = 2³. A regular prime with no special Bernoulli number complications.' },
+    { p: 257,     why: 'A Fermat prime: 257 = 2⁸ + 1 = 2^(2³) + 1. Only 5 Fermat primes are known; 257 is the fourth.' },
+    { p: 263,     why: 'A Sophie Germain prime chain: 131 → 263 → 527? No, 527 = 17×31. But 263 is itself a safe prime.' },
+    { p: 269,     why: 'The 57th prime. A twin prime with 271. Digit sum 17, which is prime.' },
+    { p: 271,     why: 'Twin prime with 269. 271 in binary is 100001111 - a curious pattern.' },
+    { p: 277,     why: 'The 59th prime. Its reversal 772 = 4 × 193. A prime that resists most special classifications - just solidly prime.' },
+    { p: 281,     why: 'A twin prime with 283. Also a Sophie Germain prime: 2×281 + 1 = 563, which is prime.' },
+    { p: 283,     why: 'Twin prime with 281. The 61st prime - 61 is itself prime, making this a prime-indexed prime.' },
+  ];
+
+  // Select based on day of year, cycling through pool
+  const idx = doy % pool.length;
+  const entry = pool[idx];
+  const p = entry.p;
+
+  // Detect properties
+  const tags = [];
+  if (isMersenne(p)) tags.push({ label: 'mersenne prime', cls: 'mersenne' });
+  if (isPalindrome(p)) tags.push({ label: 'palindrome', cls: 'palindrome' });
+  if (isRepunit(p)) tags.push({ label: 'repunit', cls: 'repunit' });
+  if (isTwinPrime(p)) tags.push({ label: 'twin prime', cls: 'twin' });
+  const isSG = isPrime(2 * p + 1);
+  if (isSG) tags.push({ label: 'sophie germain', cls: 'mersenne' });
+  const isSafe = p > 2 && isPrime((p - 1) / 2);
+  if (isSafe) tags.push({ label: 'safe prime', cls: 'twin' });
+  if (tags.length === 0) tags.push({ label: 'prime', cls: 'regular' });
+
+  // Fill DOM
+  document.getElementById('potd-number').textContent = p;
+  const tagsEl = document.getElementById('potd-tags');
+  tagsEl.innerHTML = tags.map(t => `<span class="potd-tag ${t.cls}">${t.label}</span> `).join('');
+  document.getElementById('potd-desc').textContent = entry.why;
+
+  const idx2 = primeIndex(p);
+  document.getElementById('potd-index').textContent = 'p' + idx2;
+  document.getElementById('potd-index-sub').textContent = 'the ' + idx2 + ordinal(idx2) + ' prime number';
+
+  document.getElementById('potd-factor').textContent = p + ' (prime - irreducible)';
+
+  const ds = digitSum(p);
+  document.getElementById('potd-digitsum').textContent = String(p).split('').join(' + ') + ' = ' + ds;
+  document.getElementById('potd-digitsum-sub').textContent = isPrime(ds) ? 'digit sum ' + ds + ' is also prime' : 'digit sum ' + ds + ' is composite';
+
+  const pp2 = prevPrime(p), np2 = nextPrime(p);
+  document.getElementById('potd-neighbors').textContent = pp2 + '  ·  ' + p + '  ·  ' + np2 + '   (gap: ' + (np2 - pp2) + ')';
+}
+
+function ordinal(n) {
+  const s = ['th','st','nd','rd'], v = n % 100;
+  return (s[(v-20)%10] || s[v] || s[0]);
+}
+
+pickPrimeOfDay();
+
+/* ================================================================
    ORACLE
 ================================================================ */
 function runOracle() {
@@ -509,6 +1037,31 @@ const formule = [
   { t: 'Mₚ = 2ᵖ − 1, p prime', n: 'Mersenne Primes', a: 'Marin Mersenne · 1644', c: 'Mersenne listed primes of this form in 1644, with some errors. Today GIMPS uses distributed computing to search for new ones. The largest known prime has over 41 million digits.' },
   { t: 'pₙ ~ n · ln(n)', n: 'Prime Number Theorem', a: 'Hadamard & de la Vallée Poussin · 1896', c: 'Independently proved in 1896, though conjectured by Gauss at age 15 from prime tables. Around N, roughly 1 in ln(N) numbers is prime.' },
   { t: '∫₋∞^∞ e⁻ˣ² dx = √π', n: 'Gaussian Integral', a: 'Carl Friedrich Gauss · early 1800s', c: 'π appears here with no circle in sight. The result underlies probability theory and quantum mechanics. The trick: square the integral and switch to polar coordinates.' },
+  { t: 'n! = n · (n−1) · (n−2) · … · 1', n: "Factorial & Wilson's Theorem", a: 'John Wilson · 1770', c: "Wilson's Theorem states that p is prime if and only if (p−1)! ≡ −1 (mod p). Simple to state, expensive to compute - which is why it's elegant but impractical for primality testing." },
+  { t: 'π(x) ~ x / ln(x)', n: 'Prime Counting Function', a: 'Adrien-Marie Legendre · 1798', c: 'π(x) counts primes up to x. Legendre first approximated it; Gauss refined it with the logarithmic integral Li(x). The gap between approximation and reality encodes deep truths about prime distribution.' },
+  { t: 'aᵖ ≡ a (mod p), p prime', n: "Fermat's Little Theorem", a: 'Pierre de Fermat · 1640', c: "Fermat stated it in a letter without proof. It became the foundation of modular arithmetic and RSA encryption - every time you visit an https website, Fermat's little theorem is at work." },
+  { t: 'gcd(a, b) = gcd(b, a mod b)', n: 'Euclidean Algorithm', a: 'Euclid · ~300 BCE', c: "One of the oldest algorithms still in use. Euclid described it in the Elements as a geometric procedure. It's the foundation of number theory and runs in O(log min(a,b)) steps." },
+  { t: 'Σ 1/p = ln(ln(n)) + M', n: 'Mertens\' Second Theorem', a: 'Franz Mertens · 1874', c: 'The sum of reciprocals of primes diverges - but incredibly slowly, as the log of a log. M ≈ 0.2615 is the Meissel-Mertens constant. Primes are rare, but there are just enough of them.' },
+  { t: '|{p : p ≤ x, p ≡ a (mod q)}| ~ π(x) / φ(q)', n: "Dirichlet's Theorem on Primes", a: 'Peter Gustav Dirichlet · 1837', c: 'Primes are equidistributed among valid residue classes. If gcd(a,q)=1, infinitely many primes have the form a + kq. A landmark result connecting analysis and number theory.' },
+  { t: 'p# = 2 · 3 · 5 · 7 · … · p', n: 'Primorial', a: 'Harvey Dubner · 1987 (term)', c: 'The product of all primes up to p. Primorials appear in proofs that there are infinitely many primes: p# + 1 is either prime or has a prime factor larger than p. Euclid used this idea 2300 years ago.' },
+  { t: 'Σₙ 1/n² = π²/6', n: 'Basel Problem', a: 'Leonhard Euler · 1734', c: 'Open for 90 years before Euler solved it at age 28. The unexpected appearance of π in a sum of integer reciprocals shocked the mathematical world. Euler later connected it to the Riemann zeta function: ζ(2) = π²/6.' },
+  { t: 'φ(n) = n · Π(1 − 1/p)', n: "Euler's Totient Function", a: 'Leonhard Euler · 1763', c: 'φ(n) counts integers up to n that are coprime to n. For a prime p, φ(p) = p−1. The function is central to RSA: encrypting a message M gives Mᵉ mod n, decrypted with the totient.' },
+  { t: 'aⁿ + bⁿ ≠ cⁿ, n > 2', n: "Fermat's Last Theorem", a: 'Andrew Wiles · 1995', c: "Fermat claimed a proof in 1637 that didn't fit the margin. It remained unproven for 358 years. Wiles' proof, completed in secret over 7 years, is over 100 pages and uses elliptic curves and modular forms." },
+  { t: 'Rₙ = (10ⁿ − 1) / 9', n: 'Repunit Primes', a: 'Albert Beiler · 1966 (term)', c: 'Repunits are numbers like 11, 111, 1111... R₂ and R₁₉ are prime, but finding repunit primes is hard. Only 5 repunit primes are known, and each requires enormous computational effort to verify.' },
+  { t: 'Li(x) = ∫₂ˣ dt / ln(t)', n: 'Logarithmic Integral', a: 'Carl Friedrich Gauss · ~1792', c: 'A better approximation to π(x) than x/ln(x). Gauss computed it by hand at age 15 from prime tables. Li(x) > π(x) for all known x, but Littlewood proved the difference changes sign infinitely often.' },
+  { t: '2ⁿ⁻¹ ≡ 1 (mod n) ⟹ n probably prime', n: 'Miller-Rabin Primality Test', a: 'Gary Miller & Michael Rabin · 1976', c: 'The most widely used probabilistic primality test. Run it k times: false positives exist but are astronomically rare. Used in cryptography to generate large primes for RSA keys in milliseconds.' },
+  { t: 'p₁ · p₂ · … · pₙ + 1 is prime or has new prime factor', n: "Euclid's Infinity Proof", a: 'Euclid · ~300 BCE', c: "The oldest proof that primes are infinite. Assume finitely many primes p₁…pₙ; their product plus 1 is divisible by none of them - contradiction. Elegant, two lines long, and 2300 years old." },
+  { t: 'π(x) = Li(x) − Σ Li(xᵖ) + …', n: 'Riemann Explicit Formula', a: 'Bernhard Riemann · 1859', c: "Riemann's 1859 paper gave an exact formula for π(x) using the zeros of ζ(s). Each zero contributes an oscillation to the prime distribution. The zeros are the 'music' of the primes." },
+  { t: 'a ≡ b (mod n) ⟺ n | (a − b)', n: 'Modular Arithmetic', a: 'Carl Friedrich Gauss · 1801', c: "Introduced in Gauss' Disquisitiones Arithmeticae at age 24. Clock arithmetic made rigorous. The foundation of modern cryptography, hashing, and error-correcting codes." },
+  { t: 'Fₙ = Fₙ₋₁ + Fₙ₋₂, F₀=0, F₁=1', n: 'Fibonacci Primes', a: 'Leonardo of Pisa · 1202', c: 'A Fibonacci number Fₙ can only be prime if n itself is prime (with one exception). The converse is false. Finding Fibonacci primes is an active research area; the largest known has over 100,000 digits.' },
+  { t: 'σ(n) = Σ_{d|n} d', n: 'Sum of Divisors & Perfect Numbers', a: 'Euclid · ~300 BCE', c: 'A perfect number equals the sum of its proper divisors: 6 = 1+2+3. Euclid proved that 2ᵖ⁻¹(2ᵖ−1) is perfect when 2ᵖ−1 is prime. Every even perfect number has this form. Odd perfect numbers remain undiscovered.' },
+  { t: 'x² ≡ −1 (mod p) ⟺ p ≡ 1 (mod 4)', n: 'Fermat\'s Theorem on Sums of Two Squares', a: 'Pierre de Fermat · 1640', c: 'A prime p is expressible as a sum of two squares if and only if p = 2 or p ≡ 1 (mod 4). The proof is elegant and uses Gaussian integers. 5 = 1²+2², 13 = 2²+3², but 3 and 7 cannot be so expressed.' },
+  { t: '#{(p, p+2) : p, p+2 prime, p ≤ x} ~ 2C₂ x/ln²(x)', n: 'Twin Prime Conjecture', a: 'Alphonse de Polignac · 1849', c: 'Are there infinitely many primes differing by 2? Still unproven. In 2013, Yitang Zhang proved infinitely many prime pairs differ by at most 70 million - later reduced to 246. The gap to 2 remains open.' },
+  { t: 'N = p · q, e · d ≡ 1 (mod φ(N))', n: 'RSA Encryption', a: 'Rivest, Shamir & Adleman · 1977', c: 'Every secure web connection depends on the hardness of factoring large numbers. Two large primes p and q are multiplied; the product N is public. Factoring N back is computationally infeasible with current technology.' },
+  { t: 'G(x) = Σ aₙ xⁿ', n: 'Generating Functions & Primes', a: 'Abraham de Moivre · 1730', c: 'Encoding sequences as power series turns combinatorial identities into algebraic ones. The generating function for prime indicators has no closed form - a reflection of the deep irregularity of prime distribution.' },
+  { t: 'π(x; q, a) ~ Li(x) / φ(q)', n: 'Generalized Riemann Hypothesis', a: 'David Hilbert · 1900', c: "One of Hilbert's 23 problems, still open. If true, it would give tight bounds on primes in arithmetic progressions and resolve dozens of open problems in number theory with a single stroke." },
+  { t: 'S = {n ∈ ℕ : n and n+2 both prime}', n: 'Polignac\'s Conjecture', a: 'Alphonse de Polignac · 1849', c: 'Every even number is the difference of two consecutive primes in infinitely many ways. Polignac conjectured this in 1849; it remains unproven for any even number, including 2 (the twin prime conjecture).' },
+  { t: 'Π(1 + 1/(p²−1)) = 105/2π²', n: 'Wallis-type Prime Product', a: 'Various · 17th–19th c.', c: 'Infinite products over primes appear throughout number theory, connecting multiplicative structure to analytic quantities like π. Each such identity is a window into the hidden architecture of the integers.' },
 ];
 const _doy = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
 let fi = _doy % formule.length;
@@ -523,6 +1076,182 @@ function showF() {
 function nextF() { fi = (fi + 1) % formule.length; showF(); }
 function prevF() { fi = (fi - 1 + formule.length) % formule.length; showF(); }
 showF();
+
+/* ================================================================
+   SPIRAL GENERATOR
+================================================================ */
+const sequences = {
+  primes: {
+    name: 'Primes',
+    desc: 'Numbers divisible only by 1 and themselves',
+    note: 'The Ulam spiral reveals unexpected diagonal alignments of primes - patterns that emerge from pure arithmetic, with no geometric explanation yet fully understood.',
+    color: 'rgba(184,169,232,',
+    generate: (max) => {
+      const s = new Set();
+      for (let n = 2; n <= max; n++) if (isPrime(n)) s.add(n);
+      return s;
+    }
+  },
+  fibonacci: {
+    name: 'Fibonacci numbers',
+    desc: 'Each term is the sum of the two preceding ones',
+    note: 'Fibonacci numbers appear in nature - sunflower spirals, nautilus shells, pinecones. In a number spiral they form sparse but distinctive arcs.',
+    color: 'rgba(126,200,164,',
+    generate: (max) => {
+      const s = new Set(); let a = 1, b = 1;
+      while (a <= max) { s.add(a); [a, b] = [b, a + b]; }
+      return s;
+    }
+  },
+  squares: {
+    name: 'Perfect squares',
+    desc: 'Numbers of the form n² (1, 4, 9, 16, 25...)',
+    note: 'Perfect squares form a perfect diagonal line from the center outward - one of the few sequences whose spiral pattern has an obvious geometric explanation.',
+    color: 'rgba(247,196,106,',
+    generate: (max) => {
+      const s = new Set();
+      for (let n = 1; n * n <= max; n++) s.add(n * n);
+      return s;
+    }
+  },
+  triangular: {
+    name: 'Triangular numbers',
+    desc: 'Numbers of the form n(n+1)/2 (1, 3, 6, 10, 15...)',
+    note: 'Triangular numbers count the dots in equilateral triangles. Every integer is the sum of at most 3 triangular numbers - a theorem proved by Gauss in 1796.',
+    color: 'rgba(124,235,255,',
+    generate: (max) => {
+      const s = new Set();
+      for (let n = 1; n * (n + 1) / 2 <= max; n++) s.add(n * (n + 1) / 2);
+      return s;
+    }
+  },
+  lucky: {
+    name: 'Lucky numbers',
+    desc: 'Survivors of an Eratosthenes-like sieve on positions',
+    note: 'Lucky numbers are generated by a sieve similar to Eratosthenes, but applied to positions rather than multiples. They share many statistical properties with primes - a deep and mysterious coincidence.',
+    color: 'rgba(248,113,113,',
+    generate: (max) => {
+      // Generate lucky numbers up to max using the sieve
+      const arr = [];
+      for (let i = 1; i <= max; i += 2) arr.push(i); // start with odd numbers
+      let i = 1;
+      while (i < arr.length && arr[i] <= arr.length) {
+        const step = arr[i];
+        const next = [];
+        for (let j = 0; j < arr.length; j++) {
+          if ((j + 1) % step !== 0) next.push(arr[j]);
+        }
+        arr.length = 0;
+        arr.push(...next);
+        i++;
+      }
+      return new Set(arr.filter(n => n <= max));
+    }
+  },
+  twin: {
+    name: 'Twin primes',
+    desc: 'Primes p where p+2 is also prime',
+    note: 'Twin primes become increasingly rare as numbers grow larger, yet are conjectured to be infinite. Their spiral pattern is sparser than primes but retains diagonal hints - gaps within gaps.',
+    color: 'rgba(184,169,232,',
+    generate: (max) => {
+      const s = new Set();
+      for (let n = 2; n <= max; n++) {
+        if (isPrime(n) && isPrime(n + 2)) { s.add(n); s.add(n + 2); }
+      }
+      return s;
+    }
+  }
+};
+
+let currentSeq = 'primes';
+
+function setSeq(key, btn) {
+  currentSeq = key;
+  document.querySelectorAll('.seq-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  drawSpiral();
+}
+
+function drawSpiral() {
+  const canvas = document.getElementById('spiral-canvas');
+  const ctx = canvas.getContext('2d');
+  const size = parseInt(document.getElementById('spiral-size').value);
+  const total = size * size;
+  const cell = Math.floor(420 / size);
+  const canvasSize = cell * size;
+  canvas.width = canvasSize;
+  canvas.height = canvasSize;
+  document.getElementById('spiral-size-val').textContent = size + '×' + size;
+
+  // Build spiral grid
+  const grid = new Array(size).fill(null).map(() => new Array(size).fill(0));
+  let x = Math.floor(size / 2), y = Math.floor(size / 2);
+  let dx = 0, dy = -1, steps = 1, sc = 0, turns = 0, n = 1;
+  for (let k = 0; k < total; k++) {
+    if (x >= 0 && x < size && y >= 0 && y < size) grid[y][x] = n;
+    n++; x += dx; y += dy; sc++;
+    if (sc === steps) { sc = 0; turns++; [dx, dy] = [-dy, dx]; if (turns % 2 === 0) steps++; }
+  }
+
+  const seq = sequences[currentSeq];
+  const highlighted = seq.generate(total);
+  ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+  let count = 0;
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const num = grid[row][col];
+      const hit = highlighted.has(num);
+      if (hit) {
+        count++;
+        ctx.fillStyle = seq.color + '0.75)';
+      } else {
+        ctx.fillStyle = 'rgba(255,255,255,0.025)';
+      }
+      ctx.fillRect(col * cell, row * cell, cell - 1, cell - 1);
+    }
+  }
+
+  // Update sidebar
+  document.getElementById('sp-seq-name').textContent = seq.name;
+  document.getElementById('sp-seq-desc').textContent = seq.desc;
+  document.getElementById('sp-count').textContent = count.toLocaleString();
+  document.getElementById('sp-density').textContent = ((count / total) * 100).toFixed(1) + '% of numbers highlighted';
+  document.getElementById('sp-note').textContent = seq.note;
+
+  // First 8 values
+  const vals = [...highlighted].sort((a,b) => a-b).slice(0, 8);
+  document.getElementById('sp-first').textContent = vals.join(', ') + (highlighted.size > 8 ? ', …' : '');
+
+  // Store for hover
+  canvas._grid = grid;
+  canvas._cell = cell;
+  canvas._size = size;
+  canvas._highlighted = highlighted;
+}
+
+// Spiral hover
+document.getElementById('spiral-canvas').addEventListener('mousemove', function(e) {
+  if (!this._grid) return;
+  const rect = this.getBoundingClientRect();
+  const col = Math.floor((e.clientX - rect.left) / this._cell);
+  const row = Math.floor((e.clientY - rect.top) / this._cell);
+  if (col < 0 || col >= this._size || row < 0 || row >= this._size) return;
+  const num = this._grid[row][col];
+  const hit = this._highlighted.has(num);
+  const tt = document.getElementById('spiral-tooltip');
+  document.getElementById('stt-num').textContent = num;
+  document.getElementById('stt-num').style.color = hit ? sequences[currentSeq].color + '1)' : 'var(--text)';
+  document.getElementById('stt-sub').textContent = hit ? '✓ in sequence' : 'not in sequence';
+  tt.style.display = 'block';
+  let tx = e.clientX - rect.left + 12, ty = e.clientY - rect.top + 12;
+  if (tx + 120 > this.width) tx = e.clientX - rect.left - 120;
+  tt.style.left = tx + 'px'; tt.style.top = ty + 'px';
+});
+document.getElementById('spiral-canvas').addEventListener('mouseleave', function() {
+  document.getElementById('spiral-tooltip').style.display = 'none';
+});
+drawSpiral();
 
 /* ================================================================
    ULAM SPIRAL
@@ -606,6 +1335,21 @@ document.getElementById('ulam-canvas').addEventListener('mouseleave', function()
 document.getElementById('ulam-size').addEventListener('input', drawUlam);
 document.getElementById('ulam-diag').addEventListener('change', drawUlam);
 drawUlam();
+
+/* ================================================================
+   TIMELINE FILTER
+================================================================ */
+function filterTL(tag, btn) {
+  document.querySelectorAll('.tl-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.tl-item').forEach(item => {
+    if (tag === 'all' || item.dataset.tag === tag) {
+      item.classList.remove('hidden');
+    } else {
+      item.classList.add('hidden');
+    }
+  });
+}
 
 /* ================================================================
    DISCOVERIES - Wikipedia API (prime numbers recent events)
