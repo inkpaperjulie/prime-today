@@ -821,10 +821,10 @@ stBuildUI();
 ================================================================ */
 let aypMode = 'name';
 const aypHints = {
-  name: 'Each letter is converted to its position in the alphabet (A=1, Z=26) and the values are concatenated into a number.',
+  name: 'Each letter maps to its position in the alphabet (A=1, Z=26). The values are summed into a single number. Giulia → 7+9+21+12+9+1 = 59.',
   year: 'Your birth year as a number - 1997, 2001, 1983...',
-  date: 'Enter as DDMMYYYY (e.g. 14031998). The digits are read as a single integer.',
-  number: 'Any number you want to explore.'
+  date: 'Enter as DDMMYYYY (e.g. 14031998). Day + month + year concatenated.',
+  number: 'Any number you want to explore - up to 9,999,999.'
 };
 const aypPlaceholders = {
   name: 'enter your name...',
@@ -848,22 +848,45 @@ function aypConvert(raw) {
     const cleaned = raw.toUpperCase().replace(/[^A-Z]/g, '');
     if (!cleaned) return null;
     const nums = cleaned.split('').map(c => c.charCodeAt(0) - 64);
-    return { number: BigInt(nums.join('')), label: cleaned + ' → ' + nums.join('+') + ' = ' + nums.reduce((a,b)=>a+b,0), nums };
+    const sum = nums.reduce((a, b) => a + b, 0);
+    return {
+      number: sum,
+      label: cleaned + ' → ' + nums.join(' + ') + ' = ' + sum
+    };
   }
   if (aypMode === 'year') {
     const n = parseInt(raw);
-    if (isNaN(n) || n < 1 || n > 2100) return null;
-    return { number: BigInt(n), label: 'year ' + n };
+    if (isNaN(n) || n < 1 || n > 9999999) return null;
+    return { number: n, label: 'year ' + n };
   }
   if (aypMode === 'date') {
-    const clean = raw.replace(/\D/g,'');
+    // parse DDMMYYYY and sum day + month + year
+    const clean = raw.replace(/\D/g, '');
     if (clean.length < 6) return null;
-    return { number: BigInt(clean), label: 'date ' + clean };
+    let day, month, year;
+    if (clean.length === 8) {
+      day = parseInt(clean.slice(0,2));
+      month = parseInt(clean.slice(2,4));
+      year = parseInt(clean.slice(4,8));
+    } else if (clean.length === 6) {
+      day = parseInt(clean.slice(0,2));
+      month = parseInt(clean.slice(2,4));
+      year = parseInt(clean.slice(4,6)) + 1900;
+    } else {
+      day = parseInt(clean.slice(0,2));
+      month = parseInt(clean.slice(2,4));
+      year = parseInt(clean.slice(4));
+    }
+    const n = day + month + year;
+    return {
+      number: n,
+      label: day + ' + ' + month + ' + ' + year + ' = ' + n
+    };
   }
   if (aypMode === 'number') {
     const n = parseInt(raw);
-    if (isNaN(n) || n < 1) return null;
-    return { number: BigInt(n), label: String(n) };
+    if (isNaN(n) || n < 1 || n > 9999999) return null;
+    return { number: n, label: String(n) };
   }
   return null;
 }
@@ -874,17 +897,17 @@ function runAyp() {
   const raw = document.getElementById('ayp-input').value.trim();
   if (!raw) return;
   const conv = aypConvert(raw);
-  if (!conv) return;
-
-  const n = Number(conv.number);
-  if (n > 9999999) {
+  if (!conv) {
     document.getElementById('ayp-result').classList.add('show');
-    document.getElementById('ayp-number').textContent = n.toLocaleString();
+    document.getElementById('ayp-number').textContent = '?';
     document.getElementById('ayp-number').className = 'ayp-number-display not-prime';
-    document.getElementById('ayp-verdict').textContent = 'Number too large for full primality check in the browser - but explore it in The Oracle on the main site.';
+    document.getElementById('ayp-verdict').textContent = 'Could not convert this input. Try a name, a year like 1997, or a date like 14031998.';
     document.getElementById('ayp-cards').innerHTML = '';
+    document.getElementById('ayp-share-btn').style.display = 'none';
     return;
   }
+
+  const n = conv.number;
 
   const prime = isPrime(n);
   const resEl = document.getElementById('ayp-result');
