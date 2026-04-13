@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Games · Prime Today</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2306060a'/><text x='16' y='23' font-family='Georgia,serif' font-size='22' font-style='italic' fill='%23b8a9e8' text-anchor='middle'>π</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #06060a; --surface: rgba(255,255,255,0.03); --surface2: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+      --text: #e8e3d5; --muted: rgba(232,227,213,0.38);
+      --accent: #b8a9e8; --accent2: #7ec8a4; --amber: #f7c46a; --red: #f87171;
+      --serif: 'DM Serif Display', Georgia, serif; --mono: 'DM Mono', monospace;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--mono); min-height: 100vh; overflow-x: hidden; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.4; pointer-events: none; z-index: 0;
+    }
+    .site { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 28px; }
+
+    nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; border-bottom: 0.5px solid var(--border); }
+    .nav-logo { font-family: var(--serif); font-size: 18px; color: var(--text); text-decoration: none; }
+    .nav-back { font-size: 11px; color: var(--muted); text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-back:hover { color: var(--text); }
+
+    .page-header { padding: 52px 0 40px; animation: fadeUp 0.5s ease both; }
+    .page-eyebrow { font-size: 10px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; margin-bottom: 14px; }
+    .page-title { font-family: var(--serif); font-size: 48px; font-style: italic; line-height: 1.1; margin-bottom: 12px; }
+    .page-sub { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+    .divider { height: 0.5px; background: var(--border); margin: 8px 0; }
+
+    /* GAME SECTIONS */
+    .game-section { padding: 52px 0; animation: fadeUp 0.5s ease both; animation-delay: 0.1s; }
+    .game-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 8px; }
+    .game-num { font-size: 11px; color: var(--muted); letter-spacing: 0.1em; }
+    .game-title { font-family: var(--serif); font-size: 28px; font-style: italic; }
+    .game-desc { font-size: 12px; color: var(--muted); margin-bottom: 28px; line-height: 1.7; }
+
+    /* shared button style */
+    .btn {
+      background: var(--surface2); border: 0.5px solid var(--border2);
+      border-radius: 7px; padding: 10px 20px; font-family: var(--mono);
+      font-size: 11px; color: var(--text); cursor: pointer;
+      letter-spacing: 0.06em; transition: all 0.2s;
+    }
+    .btn:hover { background: rgba(255,255,255,0.1); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn.primary { background: rgba(184,169,232,0.12); border-color: rgba(184,169,232,0.3); color: var(--accent); }
+    .btn.primary:hover { background: rgba(184,169,232,0.2); }
+
+    /* ===================== PRIME OR NOT ===================== */
+    .pon-arena {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: 16px; padding: 40px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .pon-number {
+      font-family: var(--serif); font-size: 96px; font-style: italic;
+      line-height: 1; margin-bottom: 8px; transition: all 0.2s;
+      min-height: 110px; display: flex; align-items: center; justify-content: center;
+    }
+    .pon-hint { font-size: 11px; color: var(--muted); margin-bottom: 32px; min-height: 18px; }
+    .pon-btns { display: flex; gap: 16px; justify-content: center; margin-bottom: 32px; }
+    .pon-btn {
+      padding: 14px 40px; border-radius: 8px; font-family: var(--mono);
+      font-size: 13px; cursor: pointer; letter-spacing: 0.08em;
+      transition: all 0.15s; border: 0.5px solid;
+    }
+    .pon-btn.yes { background: rgba(126,200,164,0.1); border-color: rgba(126,200,164,0.3); color: var(--accent2); }
+    .pon-btn.yes:hover { background: rgba(126,200,164,0.2); transform: scale(1.03); }
+    .pon-btn.no { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.25); color: var(--red); }
+    .pon-btn.no:hover { background: rgba(248,113,113,0.16); transform: scale(1.03); }
+    .pon-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+    .pon-feedback {
+      font-size: 14px; min-height: 22px; margin-bottom: 20px;
+      transition: opacity 0.3s;
+    }
+    .pon-feedback.correct { color: var(--accent2); }
+    .pon-feedback.wrong { color: var(--red); }
+    .pon-stats { display: flex; gap: 24px; justify-content: center; }
+    .pon-stat { text-align: center; }
+    .pon-stat-val { font-size: 28px; font-weight: 300; }
+    .pon-stat-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+    .pon-timer {
+      position: absolute; top: 0; left: 0; height: 3px;
+      background: var(--accent); transition: width linear;
+      border-radius: 3px 3px 0 0;
+    }
+    .pon-streak { font-size: 11px; color: var(--amber); min-height: 16px; margin-bottom: 8px; }
+
+    /* ===================== GOLDBACH ===================== */
+    .goldbach-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+    .goldbach-input-section {}
+    .goldbach-input-row { display: flex; gap: 0; margin-bottom: 20px; }
+    .goldbach-input {
+      background: transparent; border: 0.5px solid var(--border2);
+      border-right: none; border-radius: 8px 0 0 8px;
+      padding: 12px 18px; font-family: var(--mono); font-size: 18px;
+      color: var(--text); width: 160px; outline: none; transition: border-color 0.2s;
+    }
+    .goldbach-input:focus { border-color: var(--accent); }
+    .goldbach-input::placeholder { color: var(--muted); }
+    .goldbach-go {
+      background: rgba(184,169,232,0.1); border: 0.5px solid rgba(184,169,232,0.3);
+      border-radius: 0 8px 8px 0; padding: 12px 20px; font-family: var(--mono);
+      font-size: 11px; color: var(--accent); cursor: pointer; letter-spacing: 0.08em; transition: all 0.2s;
+    }
+    .goldbach-go:hover { background: rgba(184,169,232,0.2); }
+    .goldbach-result { min-height: 60px; }
+    .goldbach-equation {
+      font-family: var(--serif); font-size: 28px; font-style: italic;
+      color: var(--text); margin-bottom: 8px; line-height: 1.3;
+    }
+    .goldbach-pairs-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; margin-top: 16px; }
+    .goldbach-pairs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .goldbach-pair {
+      background: rgba(184,169,232,0.08); border: 0.5px solid rgba(184,169,232,0.2);
+      border-radius: 5px; padding: 4px 12px; font-size: 12px; color: var(--accent);
+    }
+    .goldbach-viz { position: relative; }
+    .goldbach-canvas-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+    #goldbach-canvas { display: block; border-radius: 6px; }
+    .goldbach-note { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.6; }
+
+    /* ===================== PRIME SOUNDTRACK ===================== */
+    .soundtrack-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+    .soundtrack-controls { display: flex; flex-direction: column; gap: 14px; }
+    .st-visualizer {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: 12px; padding: 20px; display: flex;
+      gap: 3px; align-items: flex-end; height: 100px; overflow: hidden;
+    }
+    .st-bar {
+      flex: 1; border-radius: 2px 2px 0 0;
+      background: rgba(184,169,232,0.2); transition: height 0.15s, background 0.15s;
+      min-width: 6px;
+    }
+    .st-bar.active { background: var(--accent); }
+    .st-bar.played { background: rgba(126,200,164,0.5); }
+    .st-sequence {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px;
+    }
+    .st-note {
+      background: var(--surface); border: 0.5px solid var(--border);
+      border-radius: 5px; padding: 4px 10px; font-size: 11px;
+      color: var(--muted); transition: all 0.15s; min-width: 36px; text-align: center;
+    }
+    .st-note.active { background: rgba(184,169,232,0.2); border-color: var(--accent); color: var(--accent); transform: scale(1.1); }
+    .st-note.played { background: rgba(126,200,164,0.08); border-color: rgba(126,200,164,0.2); color: var(--accent2); }
+    .st-info { display: flex; flex-direction: column; gap: 10px; }
+    .st-stat { background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+    .st-stat-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+    .st-stat-val { font-size: 16px; color: var(--text); }
+    .st-stat-sub { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .st-note-display {
+      font-family: var(--serif); font-size: 48px; font-style: italic;
+      color: var(--accent); text-align: center; min-height: 60px;
+      transition: all 0.1s;
+    }
+    .ctrl-row { display: flex; align-items: center; gap: 10px; }
+    .ctrl-label-st { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; min-width: 60px; }
+    .st-scale-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .scale-btn {
+      background: transparent; border: 0.5px solid var(--border); border-radius: 5px;
+      padding: 4px 10px; font-family: var(--mono); font-size: 10px; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.06em; transition: all 0.2s;
+    }
+    .scale-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(184,169,232,0.08); }
+    .scale-btn:hover { color: var(--text); }
+
+    /* ===================== ARE YOU PRIME ===================== */
+    .ayp-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+    .ayp-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+    .ayp-tab {
+      background: transparent; border: 0.5px solid var(--border); border-radius: 6px;
+      padding: 6px 14px; font-family: var(--mono); font-size: 10px; color: var(--muted);
+      cursor: pointer; letter-spacing: 0.08em; transition: all 0.2s;
+    }
+    .ayp-tab.active { border-color: var(--accent); color: var(--accent); background: rgba(184,169,232,0.08); }
+    .ayp-tab:hover { color: var(--text); }
+    .ayp-input-wrap { margin-bottom: 16px; }
+    .ayp-input {
+      background: transparent; border: 0.5px solid var(--border2);
+      border-radius: 8px; padding: 12px 16px; font-family: var(--mono);
+      font-size: 15px; color: var(--text); width: 100%; outline: none;
+      transition: border-color 0.2s;
+    }
+    .ayp-input:focus { border-color: var(--accent); }
+    .ayp-input::placeholder { color: var(--muted); }
+    .ayp-hint { font-size: 11px; color: var(--muted); margin-bottom: 14px; line-height: 1.6; }
+    .ayp-result { display: none; }
+    .ayp-result.show { display: block; }
+    .ayp-number-display {
+      font-family: var(--serif); font-size: 52px; font-style: italic;
+      line-height: 1; margin-bottom: 6px;
+    }
+    .ayp-number-display.prime { color: var(--accent2); }
+    .ayp-number-display.not-prime { color: rgba(232,227,213,0.4); }
+    .ayp-verdict { font-size: 13px; margin-bottom: 20px; line-height: 1.6; }
+    .ayp-cards { display: flex; flex-direction: column; gap: 8px; }
+    .ayp-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+    .ayp-card-label { font-size: 10px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 5px; }
+    .ayp-card-val { font-size: 13px; color: var(--text); line-height: 1.6; }
+    .ayp-share {
+      margin-top: 16px; font-size: 12px; color: var(--accent);
+      cursor: pointer; letter-spacing: 0.06em; background: none; border: none;
+      font-family: var(--mono); padding: 0; transition: opacity 0.2s;
+    }
+    .ayp-share:hover { opacity: 0.7; }
+
+    footer { border-top: 0.5px solid var(--border); padding: 28px 0; display: flex; justify-content: space-between; margin-top: 20px; }
+    .footer-text { font-size: 11px; color: var(--muted); }
+    .footer-link { font-size: 11px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-link:hover { color: var(--text); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes blink { 0%, 80%, 100% { opacity: 0; } 40% { opacity: 1; } }
+    @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+    .pop { animation: pop 0.25s ease; }
+
+    @media (max-width: 640px) {
+      .goldbach-wrap { grid-template-columns: 1fr; }
+      .poet-controls { flex-direction: column; align-items: stretch; }
+      .poet-input-text { width: 100%; }
+      .pon-number { font-size: 72px; }
+      .pon-btns { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+<div class="site">
+
+  <nav>
+    <a class="nav-logo" href="index.html">Prime Today</a>
+    <a class="nav-back" href="index.html">← back to site</a>
+  </nav>
+
+  <div class="page-header">
+    <div class="page-eyebrow">games</div>
+    <div class="page-title">Play with primes</div>
+    <p class="page-sub">Three ways to interact with prime numbers - speed, music, and identity.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================
+       GAME 1: PRIME OR NOT
+  ============================================================ -->
+  <div class="game-section" id="game-pon">
+    <div class="game-header">
+      <span class="game-num">01</span>
+      <span class="game-title">Prime or not?</span>
+    </div>
+    <p class="game-desc">A number appears. You have 5 seconds. Is it prime? Trust your gut - or your memory of multiplication tables.</p>
+
+    <div class="pon-arena">
+      <div class="pon-timer" id="pon-timer" style="width:100%"></div>
+      <div class="pon-streak" id="pon-streak"></div>
+      <div class="pon-number" id="pon-number">—</div>
+      <div class="pon-hint" id="pon-hint"></div>
+      <div class="pon-feedback" id="pon-feedback"></div>
+      <div class="pon-btns">
+        <button class="pon-btn yes" id="pon-yes" onclick="ponAnswer(true)">prime ✓</button>
+        <button class="pon-btn no" id="pon-no" onclick="ponAnswer(false)">not prime ✗</button>
+      </div>
+      <div class="pon-stats">
+        <div class="pon-stat">
+          <div class="pon-stat-val" id="pon-score">0</div>
+          <div class="pon-stat-label">score</div>
+        </div>
+        <div class="pon-stat">
+          <div class="pon-stat-val" id="pon-streak-num">0</div>
+          <div class="pon-stat-label">streak</div>
+        </div>
+        <div class="pon-stat">
+          <div class="pon-stat-val" id="pon-best">0</div>
+          <div class="pon-stat-label">best streak</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn primary" onclick="ponStart()">new game</button>
+      <button class="btn" onclick="ponSetDiff('easy')" id="diff-easy">easy (≤50)</button>
+      <button class="btn" onclick="ponSetDiff('medium')" id="diff-medium" style="border-color:rgba(184,169,232,0.3);color:var(--accent)">medium (≤200)</button>
+      <button class="btn" onclick="ponSetDiff('hard')" id="diff-hard">hard (≤1000)</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================
+       GAME 2: GOLDBACH CHALLENGE
+  ============================================================ -->
+  <div class="game-section" id="game-goldbach">
+    <div class="game-header">
+      <span class="game-num">02</span>
+      <span class="game-title">Goldbach challenge</span>
+    </div>
+    <p class="game-desc">Every even number greater than 2 is the sum of two primes. Goldbach conjectured this in 1742. It has never been disproven - and never been proven. Enter an even number and explore all its decompositions.</p>
+
+    <div class="goldbach-wrap">
+      <div class="goldbach-input-section">
+        <div class="goldbach-input-row">
+          <input class="goldbach-input" type="number" id="goldbach-n" placeholder="even number" min="4" max="100000" step="2" />
+          <button class="goldbach-go" onclick="runGoldbach()">decompose →</button>
+        </div>
+        <div class="goldbach-result" id="goldbach-result">
+          <p style="font-size:12px;color:var(--muted);font-style:italic;">Enter an even number to see all its Goldbach decompositions.</p>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;" id="goldbach-suggestions"></div>
+      </div>
+      <div class="goldbach-viz">
+        <div class="goldbach-canvas-label">Goldbach comet (pairs count per even n)</div>
+        <canvas id="goldbach-canvas" width="340" height="200"></canvas>
+        <p class="goldbach-note">Each point shows how many ways an even number can be expressed as p + q. The pattern never reaches zero - that would disprove Goldbach's conjecture.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================
+       GAME 3: PRIME SOUNDTRACK
+  ============================================================ -->
+  <div class="game-section" id="game-soundtrack">
+    <div class="game-header">
+      <span class="game-num">03</span>
+      <span class="game-title">Prime Soundtrack</span>
+    </div>
+    <p class="game-desc">Each prime number maps to a musical note. Listen to the sequence of primes as sound. Change the scale, the tempo, the range. Mathematics has always been close to music - now you can hear why.</p>
+
+    <div class="soundtrack-wrap">
+      <div>
+        <div class="st-visualizer" id="st-visualizer"></div>
+        <div class="st-sequence" id="st-sequence"></div>
+        <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;">
+          <button class="btn primary" id="st-play-btn" onclick="stToggle()">▶ play</button>
+          <button class="btn" onclick="stReset()">reset</button>
+        </div>
+      </div>
+      <div class="st-info">
+        <div class="st-stat" style="text-align:center;padding:20px;">
+          <div class="st-note-display" id="st-note-display">—</div>
+          <div class="st-stat-sub" id="st-note-sub">press play</div>
+        </div>
+        <div class="st-stat">
+          <div class="st-stat-label">current prime</div>
+          <div class="st-stat-val" id="st-current-prime">—</div>
+          <div class="st-stat-sub" id="st-current-idx">—</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div class="ctrl-row">
+            <span class="ctrl-label-st">scale</span>
+            <div class="st-scale-btns">
+              <button class="scale-btn active" onclick="stSetScale('major',this)">major</button>
+              <button class="scale-btn" onclick="stSetScale('minor',this)">minor</button>
+              <button class="scale-btn" onclick="stSetScale('pentatonic',this)">pentatonic</button>
+              <button class="scale-btn" onclick="stSetScale('chromatic',this)">chromatic</button>
+            </div>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label-st">tempo</span>
+            <input type="range" id="st-tempo" min="60" max="600" value="240" style="flex:1;accent-color:var(--accent);" oninput="stUpdateTempo()" />
+            <span style="font-size:11px;color:var(--muted);min-width:40px;" id="st-tempo-val">240ms</span>
+          </div>
+          <div class="ctrl-row">
+            <span class="ctrl-label-st">primes</span>
+            <input type="range" id="st-count" min="8" max="48" value="24" style="flex:1;accent-color:var(--accent);" oninput="stUpdateCount()" />
+            <span style="font-size:11px;color:var(--muted);min-width:40px;" id="st-count-val">24</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ============================================================
+       GAME 4: ARE YOU PRIME?
+  ============================================================ -->
+  <div class="game-section" id="game-ayp">
+    <div class="game-header">
+      <span class="game-num">04</span>
+      <span class="game-title">Are you prime?</span>
+    </div>
+    <p class="game-desc">Enter something about yourself - your name, your birth year, your full date of birth. The site converts it to a number and tells you everything about it. Are you prime?</p>
+
+    <div class="ayp-wrap">
+      <div>
+        <div class="ayp-tabs">
+          <button class="ayp-tab active" onclick="aypSetMode('name',this)">name</button>
+          <button class="ayp-tab" onclick="aypSetMode('year',this)">birth year</button>
+          <button class="ayp-tab" onclick="aypSetMode('date',this)">full date</button>
+          <button class="ayp-tab" onclick="aypSetMode('number',this)">any number</button>
+        </div>
+        <div class="ayp-input-wrap">
+          <input class="ayp-input" id="ayp-input" placeholder="enter your name..." />
+        </div>
+        <div class="ayp-hint" id="ayp-hint">Each letter is converted to its position in the alphabet (A=1, B=2...) and the values are summed, then concatenated into a single number.</div>
+        <button class="btn primary" onclick="runAyp()" style="width:100%;">analyse →</button>
+      </div>
+      <div>
+        <div class="ayp-result" id="ayp-result">
+          <div class="ayp-number-display" id="ayp-number">—</div>
+          <div class="ayp-verdict" id="ayp-verdict"></div>
+          <div class="ayp-cards" id="ayp-cards"></div>
+          <button class="ayp-share" id="ayp-share-btn" onclick="aypShare()" style="display:none;">copy result to share →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-text">Prime Today · games</div>
+    <a class="footer-link" href="https://narrativa33giri.substack.com/" target="_blank" rel="noopener">Narrativa a 33 Giri →</a>
+  </footer>
+
+</div><!-- /site -->
+
+<script>
+/* ================================================================
+   MATH UTILS
+================================================================ */
+function isPrime(n) {
+  if (n < 2) return false;
+  if (n === 2) return true;
+  if (n % 2 === 0) return false;
+  for (let i = 3; i * i <= n; i += 2) if (n % i === 0) return false;
+  return true;
+}
+
+function getPrimes(max) {
+  const p = [];
+  for (let i = 2; i <= max; i++) if (isPrime(i)) p.push(i);
+  return p;
+}
+
+function nthPrimes(n) {
+  const result = []; let num = 2;
+  while (result.length < n) { if (isPrime(num)) result.push(num); num++; }
+  return result;
+}
+
+/* ================================================================
+   GAME 1: PRIME OR NOT
+================================================================ */
+let ponScore = 0, ponStreak = 0, ponBest = 0;
+let ponCurrent = null, ponActive = false;
+let ponTimerInterval = null, ponTimeLeft = 5000;
+let ponDiffMax = 200;
+
+function ponSetDiff(d) {
+  const map = { easy: 50, medium: 200, hard: 1000 };
+  ponDiffMax = map[d];
+  ['easy','medium','hard'].forEach(k => {
+    const b = document.getElementById('diff-' + k);
+    b.style.borderColor = k === d ? 'rgba(184,169,232,0.3)' : 'var(--border2)';
+    b.style.color = k === d ? 'var(--accent)' : 'var(--text)';
+  });
+  ponStart();
+}
+
+function ponStart() {
+  ponScore = 0; ponStreak = 0;
+  document.getElementById('pon-score').textContent = 0;
+  document.getElementById('pon-streak-num').textContent = 0;
+  document.getElementById('pon-feedback').textContent = '';
+  document.getElementById('pon-streak').textContent = '';
+  ponNextNumber();
+}
+
+function ponNextNumber() {
+  clearInterval(ponTimerInterval);
+  ponActive = true;
+  document.getElementById('pon-yes').disabled = false;
+  document.getElementById('pon-no').disabled = false;
+  document.getElementById('pon-feedback').textContent = '';
+
+  // generate a mix: ~50% primes
+  let n;
+  if (Math.random() < 0.5) {
+    const primes = getPrimes(ponDiffMax);
+    n = primes[Math.floor(Math.random() * primes.length)];
+  } else {
+    do { n = Math.floor(Math.random() * (ponDiffMax - 4)) + 4; } while (isPrime(n));
+  }
+  ponCurrent = n;
+
+  const el = document.getElementById('pon-number');
+  el.textContent = n;
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+
+  // hint for hard mode
+  const hint = ponDiffMax >= 1000 && n > 100 ? (n % 2 === 0 ? 'even' : n % 3 === 0 ? 'divisible by 3' : n % 5 === 0 ? 'ends in 5' : '') : '';
+  document.getElementById('pon-hint').textContent = hint;
+
+  // timer
+  ponTimeLeft = 5000;
+  const timerEl = document.getElementById('pon-timer');
+  timerEl.style.transition = 'none';
+  timerEl.style.width = '100%';
+  requestAnimationFrame(() => {
+    timerEl.style.transition = 'width 5s linear';
+    timerEl.style.width = '0%';
+  });
+
+  ponTimerInterval = setInterval(() => {
+    ponTimeLeft -= 100;
+    if (ponTimeLeft <= 0) {
+      clearInterval(ponTimerInterval);
+      ponTimeout();
+    }
+  }, 100);
+}
+
+function ponTimeout() {
+  if (!ponActive) return;
+  ponActive = false;
+  document.getElementById('pon-yes').disabled = true;
+  document.getElementById('pon-no').disabled = true;
+  const fb = document.getElementById('pon-feedback');
+  fb.textContent = '⏱ time — ' + ponCurrent + (isPrime(ponCurrent) ? ' is prime' : ' is not prime');
+  fb.className = 'pon-feedback wrong';
+  ponStreak = 0;
+  document.getElementById('pon-streak-num').textContent = 0;
+  document.getElementById('pon-streak').textContent = '';
+  setTimeout(ponNextNumber, 1400);
+}
+
+function ponAnswer(userSaysPrime) {
+  if (!ponActive) return;
+  clearInterval(ponTimerInterval);
+  ponActive = false;
+  document.getElementById('pon-yes').disabled = true;
+  document.getElementById('pon-no').disabled = true;
+
+  const correct = isPrime(ponCurrent) === userSaysPrime;
+  const fb = document.getElementById('pon-feedback');
+
+  if (correct) {
+    ponScore += 1 + Math.floor(ponStreak / 3);
+    ponStreak++;
+    if (ponStreak > ponBest) { ponBest = ponStreak; document.getElementById('pon-best').textContent = ponBest; }
+    fb.textContent = '✓ correct' + (ponStreak >= 3 ? ' · +' + (1 + Math.floor(ponStreak/3)) + ' pts' : '');
+    fb.className = 'pon-feedback correct';
+    document.getElementById('pon-streak').textContent = ponStreak >= 3 ? '🔥 ' + ponStreak + ' in a row' : '';
+  } else {
+    fb.textContent = '✗ ' + ponCurrent + (isPrime(ponCurrent) ? ' is prime' : ' is not prime');
+    fb.className = 'pon-feedback wrong';
+    ponStreak = 0;
+    document.getElementById('pon-streak').textContent = '';
+  }
+
+  document.getElementById('pon-score').textContent = ponScore;
+  document.getElementById('pon-streak-num').textContent = ponStreak;
+  setTimeout(ponNextNumber, 1000);
+}
+
+ponStart();
+
+/* ================================================================
+   GAME 2: GOLDBACH
+================================================================ */
+function goldbachPairs(n) {
+  const pairs = [];
+  for (let p = 2; p <= n / 2; p++) {
+    if (isPrime(p) && isPrime(n - p)) pairs.push([p, n - p]);
+  }
+  return pairs;
+}
+
+function runGoldbach() {
+  let n = parseInt(document.getElementById('goldbach-n').value);
+  if (!n || n < 4) return;
+  if (n % 2 !== 0) { n++; document.getElementById('goldbach-n').value = n; }
+
+  const pairs = goldbachPairs(n);
+  const res = document.getElementById('goldbach-result');
+
+  if (pairs.length === 0) {
+    res.innerHTML = '<p style="color:var(--red);font-size:13px;">No pairs found - check the number.</p>';
+    return;
+  }
+
+  res.innerHTML = `
+    <div class="goldbach-equation">${n} = ${pairs[0][0]} + ${pairs[0][1]}</div>
+    <div class="goldbach-pairs-label">${pairs.length} decomposition${pairs.length > 1 ? 's' : ''} found</div>
+    <div class="goldbach-pairs">${pairs.map(([a,b]) => `<span class="goldbach-pair">${a} + ${b}</span>`).join('')}</div>
+  `;
+
+  drawGoldbachComet(n);
+}
+
+function drawGoldbachComet(highlight) {
+  const canvas = document.getElementById('goldbach-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const maxN = Math.max(100, highlight + 20);
+  const data = [];
+  for (let n = 4; n <= maxN; n += 2) data.push({ n, count: goldbachPairs(n).length });
+
+  const maxCount = Math.max(...data.map(d => d.count));
+  const pad = { l: 28, r: 10, t: 10, b: 24 };
+  const w = W - pad.l - pad.r, h = H - pad.t - pad.b;
+
+  // axes
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t); ctx.lineTo(pad.l, pad.t + h);
+  ctx.moveTo(pad.l, pad.t + h); ctx.lineTo(pad.l + w, pad.t + h);
+  ctx.stroke();
+
+  // dots
+  data.forEach(({ n, count }) => {
+    const x = pad.l + ((n - 4) / (maxN - 4)) * w;
+    const y = pad.t + h - (count / maxCount) * h;
+    const isHighlight = n === highlight;
+    ctx.beginPath();
+    ctx.arc(x, y, isHighlight ? 4 : 2, 0, Math.PI * 2);
+    ctx.fillStyle = isHighlight ? 'var(--accent)' : 'rgba(184,169,232,0.45)';
+    ctx.fill();
+  });
+
+  // x labels
+  ctx.fillStyle = 'rgba(232,227,213,0.28)';
+  ctx.font = '9px DM Mono, monospace';
+  ctx.textAlign = 'center';
+  [4, Math.round(maxN / 2), maxN].forEach(v => {
+    const x = pad.l + ((v - 4) / (maxN - 4)) * w;
+    ctx.fillText(v, x, H - 6);
+  });
+}
+
+// suggested numbers
+const suggestions = [28, 100, 1024, 9998, 54322];
+const sugEl = document.getElementById('goldbach-suggestions');
+suggestions.forEach(n => {
+  const b = document.createElement('button');
+  b.className = 'btn';
+  b.style.fontSize = '10px';
+  b.style.padding = '5px 12px';
+  b.textContent = n;
+  b.onclick = () => { document.getElementById('goldbach-n').value = n; runGoldbach(); };
+  sugEl.appendChild(b);
+});
+
+document.getElementById('goldbach-n').addEventListener('keydown', e => { if (e.key === 'Enter') runGoldbach(); });
+drawGoldbachComet(28);
+document.getElementById('goldbach-n').value = 28;
+runGoldbach();
+
+/* ================================================================
+   GAME 3: PRIME SOUNDTRACK
+================================================================ */
+const scales = {
+  major:      [0,2,4,5,7,9,11,12],
+  minor:      [0,2,3,5,7,8,10,12],
+  pentatonic: [0,2,4,7,9,12,14,16],
+  chromatic:  [0,1,2,3,4,5,6,7,8,9,10,11,12],
+};
+let stScale = 'major';
+let stTempo = 240;
+let stCount = 24;
+let stPlaying = false;
+let stIndex = 0;
+let stTimeout = null;
+let stPrimes = [];
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function stGetPrimes() {
+  const r = [];
+  let n = 2;
+  while (r.length < stCount) { if (isPrime(n)) r.push(n); n++; }
+  return r;
+}
+
+function primeToFreq(p) {
+  const sc = scales[stScale];
+  // map prime index mod scale length to a note, base C4 = 261.63 Hz
+  const primeIdx = stPrimes.indexOf(p);
+  const octave = Math.floor(primeIdx / sc.length);
+  const degree = sc[primeIdx % sc.length];
+  const semitones = degree + octave * 12;
+  return 261.63 * Math.pow(2, semitones / 12);
+}
+
+function noteNameFromFreq(freq) {
+  const notes = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  const semitones = Math.round(12 * Math.log2(freq / 261.63));
+  const note = notes[((semitones % 12) + 12) % 12];
+  const octave = 4 + Math.floor(semitones / 12);
+  return note + octave;
+}
+
+function playNote(freq, duration) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration / 1000);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + duration / 1000);
+}
+
+function stBuildUI() {
+  stPrimes = stGetPrimes();
+  const seqEl = document.getElementById('st-sequence');
+  const vizEl = document.getElementById('st-visualizer');
+  seqEl.innerHTML = '';
+  vizEl.innerHTML = '';
+  stPrimes.forEach((p, i) => {
+    const pill = document.createElement('div');
+    pill.className = 'st-note'; pill.textContent = p; pill.id = 'stn-' + i;
+    seqEl.appendChild(pill);
+    const bar = document.createElement('div');
+    bar.className = 'st-bar'; bar.id = 'stb-' + i;
+    const sc = scales[stScale];
+    const degree = sc[i % sc.length];
+    bar.style.height = (20 + degree * 5) + 'px';
+    vizEl.appendChild(bar);
+  });
+}
+
+function stStep() {
+  if (!stPlaying) return;
+  if (stIndex >= stPrimes.length) {
+    stIndex = 0;
+    stPrimes.forEach((_, i) => {
+      document.getElementById('stn-' + i)?.classList.remove('active','played');
+      document.getElementById('stb-' + i)?.classList.remove('active','played');
+    });
+  }
+  const p = stPrimes[stIndex];
+  const freq = primeToFreq(p);
+  playNote(freq, stTempo * 0.85);
+
+  // update UI
+  if (stIndex > 0) {
+    document.getElementById('stn-' + (stIndex-1))?.classList.replace('active','played');
+    document.getElementById('stb-' + (stIndex-1))?.classList.replace('active','played');
+  }
+  document.getElementById('stn-' + stIndex)?.classList.add('active');
+  document.getElementById('stb-' + stIndex)?.classList.add('active');
+
+  const noteName = noteNameFromFreq(freq);
+  document.getElementById('st-note-display').textContent = noteName;
+  document.getElementById('st-note-sub').textContent = freq.toFixed(1) + ' Hz';
+  document.getElementById('st-current-prime').textContent = p;
+  document.getElementById('st-current-idx').textContent = 'prime #' + (stIndex + 1) + ' in sequence';
+
+  stIndex++;
+  stTimeout = setTimeout(stStep, stTempo);
+}
+
+function stToggle() {
+  getAudioCtx().resume();
+  stPlaying = !stPlaying;
+  document.getElementById('st-play-btn').textContent = stPlaying ? '⏸ pause' : '▶ play';
+  if (stPlaying) stStep();
+  else clearTimeout(stTimeout);
+}
+
+function stReset() {
+  stPlaying = false; stIndex = 0;
+  clearTimeout(stTimeout);
+  document.getElementById('st-play-btn').textContent = '▶ play';
+  document.getElementById('st-note-display').textContent = '—';
+  document.getElementById('st-note-sub').textContent = 'press play';
+  document.getElementById('st-current-prime').textContent = '—';
+  document.getElementById('st-current-idx').textContent = '—';
+  stPrimes.forEach((_, i) => {
+    document.getElementById('stn-' + i)?.classList.remove('active','played');
+    document.getElementById('stb-' + i)?.classList.remove('active','played');
+  });
+}
+
+function stSetScale(s, btn) {
+  stScale = s;
+  document.querySelectorAll('.scale-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  stReset(); stBuildUI();
+}
+
+function stUpdateTempo() {
+  stTempo = parseInt(document.getElementById('st-tempo').value);
+  document.getElementById('st-tempo-val').textContent = stTempo + 'ms';
+}
+
+function stUpdateCount() {
+  stCount = parseInt(document.getElementById('st-count').value);
+  document.getElementById('st-count-val').textContent = stCount;
+  stReset(); stBuildUI();
+}
+
+stBuildUI();
+
+/* ================================================================
+   GAME 4: ARE YOU PRIME?
+================================================================ */
+let aypMode = 'name';
+const aypHints = {
+  name: 'Each letter is converted to its position in the alphabet (A=1, Z=26) and the values are concatenated into a number.',
+  year: 'Your birth year as a number - 1997, 2001, 1983...',
+  date: 'Enter as DDMMYYYY (e.g. 14031998). The digits are read as a single integer.',
+  number: 'Any number you want to explore.'
+};
+const aypPlaceholders = {
+  name: 'enter your name...',
+  year: 'e.g. 1997',
+  date: 'DDMMYYYY e.g. 14031998',
+  number: 'any number...'
+};
+
+function aypSetMode(mode, btn) {
+  aypMode = mode;
+  document.querySelectorAll('.ayp-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ayp-input').placeholder = aypPlaceholders[mode];
+  document.getElementById('ayp-hint').textContent = aypHints[mode];
+  document.getElementById('ayp-result').classList.remove('show');
+  document.getElementById('ayp-input').value = '';
+}
+
+function aypConvert(raw) {
+  if (aypMode === 'name') {
+    const cleaned = raw.toUpperCase().replace(/[^A-Z]/g, '');
+    if (!cleaned) return null;
+    const nums = cleaned.split('').map(c => c.charCodeAt(0) - 64);
+    return { number: BigInt(nums.join('')), label: cleaned + ' → ' + nums.join('+') + ' = ' + nums.reduce((a,b)=>a+b,0), nums };
+  }
+  if (aypMode === 'year') {
+    const n = parseInt(raw);
+    if (isNaN(n) || n < 1 || n > 2100) return null;
+    return { number: BigInt(n), label: 'year ' + n };
+  }
+  if (aypMode === 'date') {
+    const clean = raw.replace(/\D/g,'');
+    if (clean.length < 6) return null;
+    return { number: BigInt(clean), label: 'date ' + clean };
+  }
+  if (aypMode === 'number') {
+    const n = parseInt(raw);
+    if (isNaN(n) || n < 1) return null;
+    return { number: BigInt(n), label: String(n) };
+  }
+  return null;
+}
+
+function digitSumAyp(n) { return String(n).split('').reduce((a,c)=>a+parseInt(c),0); }
+
+function runAyp() {
+  const raw = document.getElementById('ayp-input').value.trim();
+  if (!raw) return;
+  const conv = aypConvert(raw);
+  if (!conv) return;
+
+  const n = Number(conv.number);
+  if (n > 9999999) {
+    document.getElementById('ayp-result').classList.add('show');
+    document.getElementById('ayp-number').textContent = n.toLocaleString();
+    document.getElementById('ayp-number').className = 'ayp-number-display not-prime';
+    document.getElementById('ayp-verdict').textContent = 'Number too large for full primality check in the browser - but explore it in The Oracle on the main site.';
+    document.getElementById('ayp-cards').innerHTML = '';
+    return;
+  }
+
+  const prime = isPrime(n);
+  const resEl = document.getElementById('ayp-result');
+  resEl.classList.add('show');
+
+  document.getElementById('ayp-number').textContent = n.toLocaleString();
+  document.getElementById('ayp-number').className = 'ayp-number-display ' + (prime ? 'prime' : 'not-prime');
+
+  // verdict
+  let verdict = '';
+  if (prime) {
+    verdict = n + ' is prime. Indivisible. It cannot be broken down - it is, in the most mathematical sense, itself and nothing else.';
+  } else {
+    const f = factorizeAyp(n);
+    const expr = Object.entries(f).map(([p,e]) => e > 1 ? p+'ⁿ (n='+e+')' : p).join(' × ');
+    verdict = n + ' is composite: ' + expr + '. Made of smaller primes, like most things.';
+  }
+  document.getElementById('ayp-verdict').textContent = verdict;
+
+  // cards
+  const ds = digitSumAyp(n);
+  const pp = prevPrime2(n), np = nextPrime2(n);
+  const cards = [
+    { label: 'how it was derived', val: conv.label },
+    { label: 'digit sum', val: ds + (isPrime(ds) ? ' — also prime' : ' — composite') },
+    { label: 'nearest primes', val: (prime ? 'you are prime · ' : '') + 'prev: ' + pp + '  ·  next: ' + np },
+    { label: 'prime gap around you', val: (np - pp) + ' (between ' + pp + ' and ' + np + ')' },
+  ];
+  if (!prime) {
+    const f = factorizeAyp(n);
+    cards.push({ label: 'prime factors', val: Object.entries(f).map(([p,e])=> e>1?p+'^'+e:p).join(' × ') });
+  }
+  if (isPrime(n+2) || isPrime(n-2)) {
+    const twin = isPrime(n+2) ? n+2 : n-2;
+    cards.push({ label: 'twin prime', val: 'paired with ' + twin + ' (differ by 2)' });
+  }
+
+  document.getElementById('ayp-cards').innerHTML = cards.map(c => `
+    <div class="ayp-card">
+      <div class="ayp-card-label">${c.label}</div>
+      <div class="ayp-card-val">${c.val}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('ayp-share-btn').style.display = 'block';
+  document.getElementById('ayp-share-btn')._data = { n, prime, raw };
+}
+
+function prevPrime2(n) { let x = n-1; while(x>1&&!isPrime(x))x--; return x; }
+function nextPrime2(n) { let x = n+1; while(!isPrime(x))x++; return x; }
+
+function factorizeAyp(n) {
+  const f = {}; let x = n;
+  for (let i=2; i*i<=x; i++) { while(x%i===0){f[i]=(f[i]||0)+1;x=Math.floor(x/i);} }
+  if(x>1)f[x]=(f[x]||0)+1;
+  return f;
+}
+
+function aypShare() {
+  const d = document.getElementById('ayp-share-btn')._data;
+  if (!d) return;
+  const text = d.prime
+    ? `"${d.raw}" → ${d.n} · prime · indivisible · primetoday.xyz`
+    : `"${d.raw}" → ${d.n} · composite · primetoday.xyz`;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('ayp-share-btn');
+    const orig = btn.textContent;
+    btn.textContent = 'copied ✓';
+    setTimeout(() => btn.textContent = orig, 2000);
+  });
+}
+
+document.getElementById('ayp-input').addEventListener('keydown', e => { if(e.key==='Enter') runAyp(); });
+</script>
+</body>
+</html>
